@@ -1,0 +1,218 @@
+{
+  "AeroMaster": {
+    "x": 0,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "Aggressive": {
+    "x": 80,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "BusinessMinded": {
+    "x": 160,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "Careful": {
+    "x": 240,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "DefensiveDriver": {
+    "x": 320,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "Duellist": {
+    "x": 400,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "EatMyDust": {
+    "x": 480,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "EfficientDriver": {
+    "x": 560,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "FlashInThePan": {
+    "x": 0,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "Handy": {
+    "x": 80,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "Hooner": {
+    "x": 160,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "InefficientDriver": {
+    "x": 240,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "Jealous": {
+    "x": 320,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "Jerk": {
+    "x": 400,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "Meditator": {
+    "x": 480,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "MonacoNose": {
+    "x": 560,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "NaturalStar": {
+    "x": 0,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "Passive": {
+    "x": 80,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "Patriotic": {
+    "x": 160,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "Personable": {
+    "x": 240,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "Picky": {
+    "x": 320,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "Privateer": {
+    "x": 400,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "Prodigy": {
+    "x": 480,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "QualiIssues": {
+    "x": 560,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "QualiMaster": {
+    "x": 0,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "Rainmeister": {
+    "x": 80,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "Reckless": {
+    "x": 160,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "RichParents": {
+    "x": 240,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "Silkworm": {
+    "x": 320,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "SpeedFreak": {
+    "x": 400,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "StayingPower": {
+    "x": 480,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "TechnicallyInept": {
+    "x": 560,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "TestDriver": {
+    "x": 0,
+    "y": 320,
+    "width": 80,
+    "height": 80
+  },
+  "Unshakeable": {
+    "x": 80,
+    "y": 320,
+    "width": 80,
+    "height": 80
+  },
+  "WeakDefense": {
+    "x": 160,
+    "y": 320,
+    "width": 80,
+    "height": 80
+  },
+  "PartyAnimal": {
+    "x": 240,
+    "y": 320,
+    "width": 80,
+    "height": 80
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "sprites": [
+    {
+      "fileName": "ear01.png",
+      "width": 256,
+      "height": 256,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fileName": "ear02.png",
+      "width": 256,
+      "height": 256,
+      "x": 256,
+      "y": 0
+    },
+    {
+      "fileName": "ear03.png",
+      "width": 256,
+      "height": 256,
+      "x": 512,
+      "y": 0
+    },
+    {
+      "fileName": "head01.png",
+      "width": 256,
+      "height": 256,
+      "x": 768,
+      "y": 0
+    },
+    {
+      "fileName": "head02.png",
+      "width": 256,
+      "height": 256,
+      "x": 0,
+      "y": 256
+    },
+    {
+      "fileName": "head03.png",
+      "width": 256,
+      "height": 256,
+      "x": 256,
+      "y": 256
+    },
+    {
+      "fileName": "head04.png",
+      "width": 256,
+      "height": 256,
+      "x": 512,
+      "y": 256
+    },
+    {
+      "fileName": "neck01.png",
+      "width": 256,
+      "height": 256,
+      "x": 768,
+      "y": 256
+    }
+  ],
+  "packMode": "grid",
+  "padding": 0,
+  "backgroundColor": "rgba(0, 0, 0, 0)",
+  "spriteSheetWidth": 1024,
+  "spriteSheetHeight": 1024
+}

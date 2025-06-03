@@ -1,0 +1,282 @@
+[
+  {
+    "name": "AeroMaster",
+    "description": "This driver knows their car's aerodynamics better than anyone else. They gain a +10% to the car's Chassis Performance.",
+    "cost": 3,
+    "row": 6,
+    "col": 0,
+    "display_name": "Aero Master"
+  },
+  {
+    "name": "Aggressive",
+    "description": "This driver likes to take a more aggressive approach. They receive a bonus when overtaking.",
+    "cost": 2,
+    "row": 0,
+    "col": 2,
+    "display_name": "Aggressive"
+  },
+  {
+    "name": "BusinessMinded",
+    "description": "This driver has a great mind for business. Their team qualifies for the next-highest sponsor tier (does not stack).",
+    "cost": 2,
+    "row": 5,
+    "col": 1,
+    "display_name": "Business-Minded"
+  },
+  {
+    "name": "Careful",
+    "description": "This driver knows their limits and applies them efficiently. They are less likely to crash.",
+    "cost": 2,
+    "row": 1,
+    "col": 6,
+    "display_name": "Careful"
+  },
+  {
+    "name": "DefensiveDriver",
+    "description": "This driver knows how to stand their ground. They are less likely to be overtaken.",
+    "cost": 2,
+    "row": 1,
+    "col": 3,
+    "display_name": "Defensive Driver"
+  },
+  {
+    "name": "Duellist",
+    "description": "This driver never backs down from a challenge. They gain a +1 to all stats when there is one or more drivers near them.",
+    "cost": 3,
+    "row": 4,
+    "col": 3,
+    "display_name": "Duellist"
+  },
+  {
+    "name": "EatMyDust",
+    "description": "This driver gives their best when victory is near. They receive a +1 to all stats while in 1st place.",
+    "cost": 2,
+    "row": 0,
+    "col": 4,
+    "display_name": "Eat My Dust"
+  },
+  {
+    "name": "EfficientDriver",
+    "description": "This driver knows how to make the best out of their fuel. They consume fuel 5% slower.",
+    "cost": 2,
+    "row": 1,
+    "col": 1,
+    "display_name": "Efficient Driver"
+  },
+  {
+    "name": "FlashInThePan",
+    "description": "This driver isn't here for the long run. They have a higher chance of advancing career stages.",
+    "cost": -3,
+    "row": 2,
+    "col": 0,
+    "display_name": "Flash In The Pan"
+  },
+  {
+    "name": "Handy",
+    "description": "This driver knows a thing or two about cars. They gain a bonus to car reliability.",
+    "cost": 2,
+    "row": 2,
+    "col": 4,
+    "display_name": "Handy"
+  },
+  {
+    "name": "Hooner",
+    "description": "This driver doesn't seem to acknowledge their tire's conditions. Their tires wear 5% faster.",
+    "cost": -2,
+    "row": 1,
+    "col": 0,
+    "display_name": "Hooner"
+  },
+  {
+    "name": "InefficientDriver",
+    "description": "This driver does not pay enough attention to the fuel meter. They consume fuel 5% faster.",
+    "cost": -2,
+    "row": 1,
+    "col": 2,
+    "display_name": "Inefficient Driver"
+  },
+  {
+    "name": "Jealous",
+    "description": "This driver does not take competition well. They receive a -1 to all stats if your other driver's car has a higher performance stat.",
+    "cost": -3,
+    "row": 0,
+    "col": 0,
+    "display_name": "Jealous"
+  },
+  {
+    "name": "Jerk",
+    "description": "This driver's manners aren't as good as their driving. They receive a -1 to engineer precision.",
+    "cost": -2,
+    "row": 2,
+    "col": 7,
+    "display_name": "Jerk"
+  },
+  {
+    "name": "Meditator",
+    "description": "This driver's focus is remarkable. They have a higher chance of increasing Focus but a lower chance of increasing Speed.",
+    "cost": 1,
+    "row": 6,
+    "col": 2,
+    "display_name": "Meditator"
+  },
+  {
+    "name": "MonacoNose",
+    "description": "This driver just loves the air of France. They receive a +2 to all stats at Circuit de Casino.",
+    "cost": 3,
+    "row": 0,
+    "col": 1,
+    "display_name": "Monaco Nose"
+  },
+  {
+    "name": "NaturalStar",
+    "description": "This driver has a knack for fame. They receive a +1 to bonus resources earned per race.",
+    "cost": 2,
+    "row": 0,
+    "col": 6,
+    "display_name": "Natural Star"
+  },
+  {
+    "name": "Passive",
+    "description": "This driver likes to take things slow. They receive a penalty when overtaking.",
+    "cost": -2,
+    "row": 0,
+    "col": 3,
+    "display_name": "Passive"
+  },
+  {
+    "name": "Patriotic",
+    "description": "This driver works best when they do it for their country. They gain a +1 to Focus when racing on a track in their country of origin.",
+    "cost": 2,
+    "row": 5,
+    "col": 2,
+    "display_name": "Patriotic"
+  },
+  {
+    "name": "Personable",
+    "description": "This driver is a pleasure to be around. They gain a +1 to engineer precision.",
+    "cost": 2,
+    "row": 2,
+    "col": 6,
+    "display_name": "Personable"
+  },
+  {
+    "name": "Picky",
+    "description": "This driver seems to find issues with almost every car. They are more likely to complain about their car on the radio.",
+    "cost": 1,
+    "row": 5,
+    "col": 7,
+    "display_name": "Picky"
+  },
+  {
+    "name": "Privateer",
+    "description": "This driver is surprisingly affordable. They cost 5 resources cheaper than normal.",
+    "cost": 5,
+    "row": 4,
+    "col": 6,
+    "display_name": "Privateer"
+  },
+  {
+    "name": "Prodigy",
+    "description": "This driver shows great potential. They have a higher chance of gaining skill and focus in their Early Career but a lower chance in their other Career stages.",
+    "cost": 2,
+    "row": 2,
+    "col": 1,
+    "display_name": "Prodigy"
+  },
+  {
+    "name": "QualiIssues",
+    "description": "This driver doesn't take qualis as seriously as they should. They have a -2 to their focus during qualifying.",
+    "cost": -3,
+    "row": 4,
+    "col": 7,
+    "display_name": "Quali Issues"
+  },
+  {
+    "name": "QualiMaster",
+    "description": "This driver takes qualis very seriously. They have a +2 to their focus during qualifying.",
+    "cost": 3,
+    "row": 5,
+    "col": 0,
+    "display_name": "Quali Master"
+  },
+  {
+    "name": "Rainmeister",
+    "description": "This driver knows how to navigate wet tracks efficiently. They have a lower chance of crashing when it rains.",
+    "cost": 3,
+    "row": 2,
+    "col": 2,
+    "display_name": "Rainmeister"
+  },
+  {
+    "name": "Reckless",
+    "description": "This driver enjoys the adrenaline a bit too much. They are more likely to crash.",
+    "cost": -3,
+    "row": 1,
+    "col": 5,
+    "display_name": "Reckless"
+  },
+  {
+    "name": "RichParents",
+    "description": "This driver costs 0 to hire. They really don't need the money.",
+    "cost": 3,
+    "row": 2,
+    "col": 3,
+    "display_name": "Rich Parents"
+  },
+  {
+    "name": "Silkworm",
+    "description": "This driver knows how to use their tires efficiently. Their tires wear 5% slower.",
+    "cost": 2,
+    "row": 0,
+    "col": 7,
+    "display_name": "Silkworm"
+  },
+  {
+    "name": "SpeedFreak",
+    "description": "This driver lives for the thrill of high speeds. They have a higher chance of increasing Speed but a lower chance of increasing Focus.",
+    "cost": 2,
+    "row": 6,
+    "col": 1,
+    "display_name": "Speed Freak"
+  },
+  {
+    "name": "StayingPower",
+    "description": "This driver's skills age like fine wine. They have a lower chance of advancing career stages.",
+    "cost": 2,
+    "row": 1,
+    "col": 7,
+    "display_name": "Staying Power"
+  },
+  {
+    "name": "TechnicallyInept",
+    "description": "This driver knows their way around a pedal, but not so much around an engine. Their cars have less reliability.",
+    "cost": -3,
+    "row": 2,
+    "col": 5,
+    "display_name": "Technically Inept"
+  },
+  {
+    "name": "TestDriver",
+    "description": "This driver knows their way around most types of cars. They gain a +10% to the car's overall reliability.",
+    "cost": 3,
+    "row": 5,
+    "col": 6,
+    "display_name": "Test Driver"
+  },
+  {
+    "name": "Unshakeable",
+    "description": "This driver gives their best when things are looking dire. They receive a +1 to all stats while lower than 10th place.",
+    "cost": 2,
+    "row": 0,
+    "col": 5,
+    "display_name": "Unshakeable"
+  },
+  {
+    "name": "WeakDefense",
+    "description": "This driver's defense game has some evident flaws. They are more likely to be overtaken.",
+    "cost": -2,
+    "row": 1,
+    "col": 4,
+    "display_name": "Weak Defense"
+  }
+]

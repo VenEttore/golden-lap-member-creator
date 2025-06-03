@@ -1,0 +1,82 @@
+[
+    {
+        "name": "AbsentMindedGenius",
+        "description": "This engineer is a master of their craft.. albeit inattentive. They have a higher chance of increasing their Expertise stat, but a lower chance of increasing Precision when switching careers.",
+        "display_name": "Absent-Minded Genius"
+    },
+    {
+        "name": "Aerodynamicist",
+        "description": "This engineer knows that in racing physics is your greatest ally. Chassis parts built or tuned by this engineeer gain the following bonuses: +20 bonus on Chassis performance +1 bonus on Chassis tuning",
+        "display_name": "Aerodynamicist"
+    },
+    {
+        "name": "AvantGarde",
+        "description": "This engineer is in their space when experimenting with new ideas. When building an experimental car it receives a +10% to the higher limit and a -10% to the lower limit.",
+        "display_name": "Avant-Garde"
+    },
+    {
+        "name": "Broker",
+        "description": "This engineer knows how to get the best deals. Building new parts costs 10% less.",
+        "display_name": "Broker"
+    },
+    {
+        "name": "DesignMaster",
+        "description": "This engineer has mastered the craft of every aspect of a racing car. All parts built by them gain 20 Performance added to the final result.",
+        "display_name": "Design Master"
+    },
+    {
+        "name": "DriverRapport",
+        "description": "This Engineer builds trust between them and their team. Their drivers have a +1 to their Focus",
+        "display_name": "Driver Rapport"
+    },
+    {
+        "name": "DriversAreIdiots",
+        "description": "This engineer feels like their work is not appreciated. Their drivers receive a -1 to their Focus.",
+        "display_name": "Drivers Are Idiots"
+    },
+    {
+        "name": "Finesse",
+        "description": "This engineer knows that proper handling is key. Handling parts built or tuned by this engineeer gain the following bonuses: 20 Performance added to the final result of built parts, +1 minimum value for tuned parts.",
+        "display_name": "Finesse"
+    },
+    {
+        "name": "PartsPerfect",
+        "description": "This engineer does not take suggestions to their tuning skills well. Parts tuned by them have a -1 subtracted to the minimum value.",
+        "display_name": "Parts Perfect"
+    },
+    {
+        "name": "Perfectionist",
+        "description": "Thisengineer will stop at nothing short of perfection. They have a higher chance of increasing their Precision stat, but a Lower chance of increasing Expertise when switching careers.",
+        "display_name": "Perfectionist"
+    },
+    {
+        "name": "PowerHungry",
+        "description": "This engineer's cars pack a punch. Engines built or tuned by this engineeer gain the following bonuses: 20 Performance added to the final result of built parts +1 minimum value for tuned parts.",
+        "display_name": "Power Hungry"
+    },
+    {
+        "name": "Strategist",
+        "description": "This engineer knows how to prepare their cars for all situations. Cars built by them degrade 10% slower.",
+        "display_name": "Strategist"
+    },
+    {
+        "name": "Traditionalist",
+        "description": "This engineer dislikes leaving their comfort zone. When building an experimental car it receives a -10% to the higher limit and a +10% to the lower limit.",
+        "display_name": "Traditionalist"
+    },
+    {
+        "name": "TuningMaster",
+        "description": "This engineer  has mastered their tuning techniques to perfection. Parts tuned by them have a +1 added to the minimum value.",
+        "display_name": "Tuning Master"
+    },
+    {
+        "name":  "Wasteful",
+        "description": "This engineer is prone to wasting materials. Building new parts costs 10% more.",
+        "display_name": "Wasteful"
+    },
+    {
+        "name": "WorkOutKinks",
+        "description": "This engineer is not bothered by subpar work. All parts built by them receive a -20 Performance to the final result.",
+        "display_name": "Work Out Kinks"
+    }
+]

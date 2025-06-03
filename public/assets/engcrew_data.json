@@ -1,0 +1,170 @@
+{
+  "AbsentMindedGenius": {
+    "x": 0,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "Aerodynamicist": {
+    "x": 80,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "AvantGarde": {
+    "x": 160,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "Broker": {
+    "x": 240,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "DesignMaster": {
+    "x": 320,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "DriverRapport": {
+    "x": 400,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "DriversAreIdiots": {
+    "x": 480,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "Finesse": {
+    "x": 560,
+    "y": 0,
+    "width": 80,
+    "height": 80
+  },
+  "PartsPerfect": {
+    "x": 0,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "Perfectionist": {
+    "x": 80,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "PowerHungry": {
+    "x": 160,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "Strategist": {
+    "x": 240,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "Traditionalist": {
+    "x": 320,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "TuningMaster": {
+    "x": 160,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "Wasteful": {
+    "x": 480,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "WorkOutKinks": {
+    "x": 560,
+    "y": 80,
+    "width": 80,
+    "height": 80
+  },
+  "ButterFingers": {
+    "x": 0,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "CrewPerfectionist": {
+    "x": 80,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "Exacting": {
+    "x": 160,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "FuelStrategist": {
+    "x": 240,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "PracticeMakesPerfect": {
+    "x": 320,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "RiskTaker": {
+    "x": 400,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "RubberStrategist": {
+    "x": 480,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "Sloppy": {
+    "x": 560,
+    "y": 160,
+    "width": 80,
+    "height": 80
+  },
+  "SpeedDriller": {
+    "x": 0,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "SteadyHands": {
+    "x": 80,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "WetStrategist": {
+    "x": 240,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  },
+  "PartyAnimal": {
+    "x": 320,
+    "y": 240,
+    "width": 80,
+    "height": 80
+  }
+}

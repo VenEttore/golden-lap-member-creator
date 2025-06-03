@@ -1,0 +1,62 @@
+[
+    {
+        "name": "ButterFingers",
+        "description": "This crew chief is prone to coordination mistakes. While they are on your team the chances of a failed pitstop are increased by 50%",
+        "display_name": "Butter Fingers"
+    },
+    {
+        "name": "CrewPerfectionist",
+        "description": "This crew chief won't be satisfied by anything but perfection. When they change career stage they have a +10% chance of increasing Skill but a -10% chance of increasing Speed.",
+        "display_name": "Crew Perfectionist"
+    },
+    {
+        "name": "Exacting",
+        "description": "This crew chief is strict and ensures proper part handlings are followed. Car parts have their minimum reliability before a mechanical failure can happen lowered by 10%.",
+        "display_name": "Exacting"
+    },
+    {
+        "name": "FuelStrategist",
+        "description": "This crew chief ensures drivers know proper fuel management techniques. While they are on your team all cars consume 5% less fuel.",
+        "display_name": "Fuel Strategist"
+    },
+    {
+        "name": "PracticeMakesPerfect",
+        "description": "This crew chief has perfected their pitstopping techniques through many failures. While they are on your team the chances of a failed pitstop are lowered by 50%",
+        "display_name": "Practice Makes Perfect"
+    },
+    {
+        "name": "RiskTaker",
+        "description": "This crew chief enjoys taking risks. Their pitstops have their base time lowered by 20% but are 50% more likely to fail.",
+        "display_name": "Risk Taker"
+    },
+    {
+        "name": "RubberStrategist",
+        "description": "This crew chief knows how to optimize and organize proper tire management. While they are on your team tires wear 10% slower.",
+        "display_name": "Rubber Strategist"
+    },
+    {
+        "name": "Sloppy",
+        "description": "This crew chief isn't the best at supervising the quality of their car parts. Car parts have their minimum reliability before a mechanical failure can happen increased by 10%.",
+        "display_name": "Sloppy"
+    },
+    {
+        "name": "SpeedDriller",
+        "description": "This crew chief expects the utmost swiftness out of their crew. When they change career stage they have a +10% chance of increasing Speed but a -10% chance of increasing Skill.",
+        "display_name": "Speed Driller"
+    },
+    {
+        "name": "SteadyHands",
+        "description": "This crew chief takes his time to ensure proper handling. Their pitstops have their base time increased by 20% but are 50% less likely to fail.",
+        "display_name": "Steady Hands"
+    },
+    {
+        "name": "TuningMaster",
+        "description": "This crew chief has mastered their tuning techniques to perfection. Parts tuned by them have a +1 added to the minimum value.",
+        "display_name": "Tuning Master"
+    },
+    {
+        "name": "WetStrategist",
+        "description": "This crew chief knows how to tackle a race in wet environments. While they are on your team drivers gain 10% more speed on dry tires while on a wet track.",
+        "display_name": "Wet Strategist"
+    }
+]

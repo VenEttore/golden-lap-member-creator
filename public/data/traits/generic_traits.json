@@ -1,0 +1,27 @@
+[
+    {
+        "name": "EarlyCareer",
+        "description": "This team member is early in their career. They have a higher chance of gaining skill points. There's a 33% to chance to change to Mid career each year.",
+        "display_name": "Early Career"
+    },
+    {
+        "name": "MidCareer",
+        "description": "This team member is mid-career. 33% chance to change to Late career each year. Average chance of gaining skill points.",
+        "display_name": "Mid Career"
+    },
+    {
+        "name": "LateCareer",
+        "description": "This team member is late in their career. 33% chance to change to Final year each year. Lower chance of gaining skill points, chance of losing skill points.",
+        "display_name": "Late Career"
+    },
+    {
+        "name": "LastYear",
+        "description": "This team member is in the last year of their career, and will retire at the end of the season.",
+        "display_name": "Last Year"
+    },
+    {
+        "name": "PartyAnimal",
+        "description": "This team member loves to party before a big day. They are more likely to get the 'Partied Too Hard' trait before a qualifier or race.",
+        "display_name": "Party Animal"
+    }
+]

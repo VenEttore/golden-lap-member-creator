@@ -1,0 +1,49 @@
+{
+  "name": "golden-lap-member-creator",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest",
+    "test:vitest": "vitest run"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@mui/material": "^7.1.0",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-visually-hidden": "^1.2.3",
+    "@types/jszip": "^3.4.0",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.511.0",
+    "next": "15.3.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-easy-crop": "^5.4.2",
+    "sonner": "^2.0.4",
+    "transliteration": "^2.3.5"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pixelmatch": "^5.2.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.3",
+    "pixelmatch": "^7.1.0",
+    "sharp": "^0.34.2",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^3.1.4"
+  },
+  "type": "module"
+}
