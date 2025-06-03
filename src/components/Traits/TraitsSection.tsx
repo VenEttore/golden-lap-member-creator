@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { useTraitTooltip, TraitTooltip } from './TraitTooltip';
 
 // Use the same card style as Information/Stats cards
@@ -11,11 +12,18 @@ const sectionHeaderBorder = '#d1cfc7';
 const driversSheet = '/assets/drivers_sheet.png';
 const engcrewSheet = '/assets/engcrew_sheet.png';
 
+interface IconData {
+  [key: string]: {
+    x: number;
+    y: number;
+  };
+}
+
 // Reusable TraitIcon component
 function TraitIcon({ traitName, memberType, iconData, size = 24, className = '' }: {
   traitName: string;
   memberType: 'driver' | 'engineer' | 'crew_chief';
-  iconData: any;
+  iconData: IconData;
   size?: number;
   className?: string;
 }) {
@@ -95,7 +103,7 @@ function SectorPips({ count }: { count: number }) {
   return (
     <div className="flex items-center gap-2">
       {[...Array(5)].map((_, i) => (
-        <img
+        <Image
           key={i}
           src="/assets/SectorPip.png"
           alt={i < count ? 'Selected' : 'Unselected'}
@@ -114,7 +122,7 @@ function SectorPips({ count }: { count: number }) {
 export default function TraitsSection({ memberType, selectedTraits, onTraitsChange, initialTraitNames }: TraitsSectionProps) {
   const [availableTraits, setAvailableTraits] = useState<Trait[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [iconData, setIconData] = useState<any>(null);
+  const [iconData, setIconData] = useState<IconData | null>(null);
   const [sortAsc, setSortAsc] = useState(true);
   const [selectedSortAsc, setSelectedSortAsc] = useState(true);
   const { tooltip, showTooltip, moveTooltip, hideTooltip } = useTraitTooltip();
@@ -149,20 +157,20 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
     // Load icon data based on member type
     const loadIconData = async () => {
       try {
-        let iconDataUrl = memberType === 'driver'
+        const iconDataUrl = memberType === 'driver'
           ? '/assets/drivers_data.json'
           : '/assets/engcrew_data.json';
         const response = await fetch(iconDataUrl);
         const data = await response.json();
         setIconData(data);
-      } catch (error) {
+      } catch {
         setIconData(null);
       }
     };
     loadIconData();
   }, [memberType]);
 
-  useEffect(() => {
+  const handleInitialTraits = useCallback(() => {
     if (
       Array.isArray(initialTraitNames) &&
       initialTraitNames.length > 0 &&
@@ -174,12 +182,16 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
       ).filter(Boolean);
       if (mapped.length > 0) onTraitsChange(mapped as Trait[]);
     }
-  }, [initialTraitNames, availableTraits]);
+  }, [initialTraitNames, availableTraits, selectedTraits.length, onTraitsChange]);
+
+  useEffect(() => {
+    handleInitialTraits();
+  }, [handleInitialTraits]);
 
   // Hide tooltip when selectedTraits changes (e.g., trait removed)
   useEffect(() => {
     hideTooltip();
-  }, [selectedTraits]);
+  }, [selectedTraits, hideTooltip]);
 
   const filteredTraits = availableTraits.filter(trait =>
     (trait.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -212,6 +224,18 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
       }
       onTraitsChange([...selectedTraits, trait]);
     }
+  };
+
+  const renderTraitIcon = (traitName: string) => {
+    if (!iconData) return null;
+    return (
+      <TraitIcon
+        traitName={traitName}
+        memberType={memberType}
+        iconData={iconData}
+        size={24}
+      />
+    );
   };
 
   return (
@@ -303,7 +327,7 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
                       onClick={() => handleTraitSelect(trait)}
                     >
                       <td className="p-2 w-[220px] min-w-[180px] max-w-[300px] whitespace-nowrap overflow-ellipsis overflow-hidden flex items-center">
-                        <TraitIcon traitName={trait.name} memberType={memberType} iconData={iconData} size={24} />
+                        {renderTraitIcon(trait.name)}
                         <span style={{ marginLeft: 8 }}>{trait.display_name}</span>
                       </td>
                       <td className="p-2">{trait.description}</td>
@@ -382,7 +406,7 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
                       onMouseLeave={hideTooltip}
                     >
                       <td className="p-2 flex items-center">
-                        <TraitIcon traitName={trait.name} memberType={memberType} iconData={iconData} size={24} />
+                        {renderTraitIcon(trait.name)}
                         <span style={{ marginLeft: 8 }}>{trait.display_name}</span>
                       </td>
                     </tr>

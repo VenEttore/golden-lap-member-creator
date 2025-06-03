@@ -1,14 +1,21 @@
 // Utility for batch portrait generation using SSE
 
+interface PortraitConfig {
+  name: string;
+  config: Record<string, unknown>;
+  thumbnail: string;
+  fullSizeImage: string;
+}
+
 export interface BatchPortraitResult {
   name: string;
-  config: any;
+  config: PortraitConfig;
   thumbnail: string;
   fullSizeImage: string;
 }
 
 export async function generateBatchPortraitsSSE(
-  configs: any[],
+  configs: PortraitConfig[],
   onPortrait: (result: BatchPortraitResult) => void
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
@@ -21,15 +28,22 @@ export async function generateBatchPortraitsSSE(
       body: JSON.stringify(configs),
       signal,
     });
-    (eventSource as any).onmessage = (event: { data: string }) => {
+    eventSource.onmessage = (event: { data: string }) => {
       if (event.data) {
         try {
           const data = JSON.parse(event.data);
           onPortrait(data);
-        } catch {}
+        } catch (error) {
+          console.error('Error parsing portrait data:', error);
+        }
       }
     };
-    (eventSource as any).onerror = (_err: any) => {
+    eventSource.onerror = (err: Error) => {
+      console.error('EventSource error:', err);
+      eventSource.close();
+      reject(err);
+    };
+    eventSource.onclose = () => {
       eventSource.close();
       resolve();
     };
@@ -53,7 +67,8 @@ class EventSourcePolyfill {
   options: EventSourcePolyfillOptions;
   controller: AbortController;
   onmessage?: (event: { data: string }) => void;
-  onerror?: (err?: any) => void;
+  onerror?: (err: Error) => void;
+  onclose?: () => void;
   constructor(url: string, options: EventSourcePolyfillOptions) {
     this.url = url;
     this.options = options;
@@ -65,26 +80,37 @@ class EventSourcePolyfill {
       method: this.options.method || 'GET',
       headers: this.options.headers,
       body: this.options.body,
-      signal: this.options.signal || this.controller.signal,
+      signal: this.controller.signal,
     }).then(async (res) => {
       const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
       let buffer = '';
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        buffer += new TextDecoder().decode(value);
-        let idx;
-        while ((idx = buffer.indexOf('\n\n')) !== -1) {
-          const chunk = buffer.slice(0, idx);
-          buffer = buffer.slice(idx + 2);
-          if (chunk.startsWith('data: ')) {
-            this.onmessage && this.onmessage({ data: chunk.slice(6) });
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (this.onmessage) {
+              this.onmessage({ data });
+            }
           }
         }
       }
-      this.onerror && this.onerror();
+
+      if (this.onclose) {
+        this.onclose();
+      }
     }).catch((err) => {
-      this.onerror && this.onerror(err);
+      if (this.onerror) {
+        this.onerror(err);
+      }
     });
   }
   close() {

@@ -1,12 +1,13 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import PortraitGeneratorPanel from './PortraitGeneratorPanel';
-import { getPortraits, addOrUpdatePortrait, deletePortrait, deleteAllPortraits } from '@/utils/portraitStorage';
+import { getPortraits, addOrUpdatePortrait, deletePortrait } from '@/utils/portraitStorage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { PortraitConfig } from '@/types/portrait';
 import PortraitThumbnail from './PortraitThumbnail';
 import { generateRandomPortraits } from '@/utils/batchPortraitRandomizer';
+import Image from 'next/image';
 
 // Color palette and card styles from MemberCreatorModern
 const cardBorder = '#AA8B83';
@@ -15,7 +16,7 @@ const sectionHeaderBg = '#d0cdbe';
 const sectionHeaderBorder = '#d1cfc7';
 const cardBg = '#F5F5F2';
 
-function SectionHeader({ children, centerHeader }: { children: React.ReactNode; centerHeader?: boolean }) {
+function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
@@ -58,33 +59,6 @@ function Card({ children, title }: { children: React.ReactNode; title: string })
       <div className="py-8 px-8 flex-1 flex flex-col gap-4">{children}</div>
     </div>
   );
-}
-
-function getPortraitsFromStorage(): PortraitConfig[] {
-  if (typeof window === 'undefined') return [];
-  const raw = localStorage.getItem('portraits');
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-
-function savePortraitToStorage(portrait: PortraitConfig) {
-  const portraits = getPortraitsFromStorage();
-  const idx = portraits.findIndex(p => p.name === portrait.name);
-  if (idx !== -1) {
-    portraits[idx] = portrait;
-  } else {
-    portraits.push(portrait);
-  }
-  localStorage.setItem('portraits', JSON.stringify(portraits));
-}
-
-function deletePortraitFromStorage(name: string) {
-  const portraits = getPortraitsFromStorage().filter(p => p.name !== name);
-  localStorage.setItem('portraits', JSON.stringify(portraits));
 }
 
 const PortraitGallery: React.FC = () => {
@@ -142,7 +116,7 @@ const PortraitGallery: React.FC = () => {
     >
       <div className="w-full max-w-[1600px] mx-auto pt-8 pb-8 px-4">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: 32, marginTop: 8 }}>
-          <img src="/assets/GLLogo_New.png" alt="Golden Lap Logo" style={{ maxHeight: 64, width: 'auto', marginBottom: 8 }} />
+          <Image src="/assets/GLLogo_New.png" alt="Golden Lap Logo" width={256} height={64} style={{ maxHeight: 64, width: 'auto', marginBottom: 8 }} />
           <h2 className="text-xl text-gray-600 font-bold tracking-wide font-[Figtree,Inter,sans-serif]" style={{ textAlign: 'center' }}>Portrait Creator</h2>
         </div>
         <div style={{ display: 'flex', flexDirection: 'row', gap: 40, alignItems: 'flex-start', minWidth: 0, width: '100%' }}>

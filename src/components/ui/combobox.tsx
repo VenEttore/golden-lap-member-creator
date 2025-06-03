@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { ChevronsUpDown } from "lucide-react"
 import ReactDOM from "react-dom"
 
 import { cn } from "@/lib/utils"

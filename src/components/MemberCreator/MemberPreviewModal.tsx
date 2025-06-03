@@ -3,8 +3,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { TraitIcon } from '../Traits/TraitsSection';
 import { Button } from './MemberCreatorModern';
 import { TraitTooltip, useTraitTooltip } from '../Traits/TraitTooltip';
-import PortraitThumbnail from '../Portraits/PortraitThumbnail';
 import { getPortraits } from '@/utils/portraitStorage';
+import Image from 'next/image';
 
 const cardBg = '#f7f5f2';
 const coral = '#fd655c';
@@ -53,22 +53,25 @@ const CAREER_STAGE_LABELS: Record<string, string> = {
   last_year: 'Last Year',
 };
 
+// Type alias for icon data used by trait icons (sprite sheet positions)
+type IconData = { [traitName: string]: { x: number; y: number; width?: number; height?: number } };
+
 export default function MemberPreviewModal({ open, onClose, name, surname, country, careerStage, portraitUrl, portraitName, traits, stats, cost, type, decadeStartContent, onConfirm, confirmText }: MemberPreviewModalProps) {
   // Load iconData for trait icons
-  const [iconData, setIconData] = useState<any>(null);
+  const [iconData, setIconData] = useState<IconData>({});
   const { tooltip, showTooltip, hideTooltip, moveTooltip } = useTraitTooltip();
 
   useEffect(() => {
     const loadIconData = async () => {
       try {
-        let iconDataUrl = type === 'driver'
+        const iconDataUrl = type === 'driver'
           ? '/assets/drivers_data.json'
           : '/assets/engcrew_data.json';
         const response = await fetch(iconDataUrl);
         const data = await response.json();
-        setIconData(data);
-      } catch (error) {
-        setIconData(null);
+        setIconData(data || {});
+      } catch {
+        setIconData({});
       }
     };
     loadIconData();
@@ -79,12 +82,9 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
     // Format country code (2-letter, lowercase)
     const countryCode = country.length === 2 ? country.toLowerCase() : country.toLowerCase();
     // Use the portraitName if available, else fallback to name+surname
-    let portraitFile = '';
-    if (portraitName && portraitName.trim()) {
-      portraitFile = portraitName.trim() + '.png';
-    } else {
-      portraitFile = `${name}${surname}`.replace(/\s+/g, '') + '.png';
-    }
+    const portraitFile = portraitName && portraitName.trim()
+      ? portraitName.trim() + '.png'
+      : `${name}${surname}`.replace(/\s+/g, '') + '.png';
     const portraitPath = `Textures/Portraits/${portraitFile}`;
     // Map careerStage to the correct trait name
     const CAREER_STAGE_TRAIT_MAP: Record<string, string> = {
@@ -105,7 +105,7 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
       Traits: traitNames,
       DecadeStartContent: !!decadeStartContent,
     };
-    let member: any = {};
+    let member: Record<string, unknown> = {};
     if (type === 'driver') {
       member = {
         ...base,
@@ -132,7 +132,7 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
       };
     }
     // Use only name and surname for the file name (no member type)
-    let fileName = `${name} ${surname}.json`;
+    const fileName = `${name} ${surname}.json`;
     const blob = new Blob([JSON.stringify(member, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -149,7 +149,7 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
         <span style={{ fontWeight: 700, color: '#444', fontSize: '1.08rem', marginRight: 8, letterSpacing: '0.01em', minWidth: 60 }}>{label}:</span>
         <div style={{ display: 'flex', gap: 2.88 }}>
           {Array.from({ length: max }).map((_, i) => {
-            let style: React.CSSProperties = {
+            const style: React.CSSProperties = {
               width: 14,
               height: 14,
               borderRadius: '50%',
@@ -180,33 +180,6 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
     );
   }
 
-  // Helper: Render trait icons with tooltips
-  function renderTraitIcons() {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'row', gap: 0, alignItems: 'center', background: '#ece9e2', borderRadius: 7, border: '1.5px solid #e0ded9', padding: '2px 8px', minHeight: 32 }}>
-        {traits.map((trait, idx) => (
-          <span
-            key={trait.name}
-            style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', width: 28, height: 28, borderRadius: 7, marginRight: idx !== traits.length - 1 ? 2 : 0, justifyContent: 'center' }}
-            onMouseEnter={e => showTooltip(e, trait.display_name, trait.description)}
-            onMouseMove={moveTooltip}
-            onMouseLeave={hideTooltip}
-          >
-            <TraitIcon traitName={trait.name} memberType={type} iconData={iconData} size={24} />
-          </span>
-        ))}
-        {tooltip && (
-          <TraitTooltip
-            title={tooltip.title}
-            description={tooltip.description}
-            x={tooltip.x}
-            y={tooltip.y}
-          />
-        )}
-      </div>
-    );
-  }
-
   // Get base stats for this member type
   const statDefs = BASE_STATS[type];
 
@@ -220,14 +193,19 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
     return `https://flagcdn.com/${code}.svg`;
   }
 
-  const [portraitObj, setPortraitObj] = React.useState<any>(null);
+  interface PortraitObj {
+    name: string;
+    fullSizeImage?: string;
+    thumbnail?: string;
+  }
+  const [portraitObj, setPortraitObj] = React.useState<PortraitObj | null>(null);
   React.useEffect(() => {
     let cancelled = false;
     async function loadPortrait() {
       if (portraitName) {
-        const portraits = await getPortraits();
+        const portraits: PortraitObj[] = await getPortraits();
         if (cancelled) return;
-        const found = portraits.find((p: any) => p.name === portraitName);
+        const found = portraits.find((p) => p.name === portraitName);
         setPortraitObj(found || null);
       } else {
         setPortraitObj(null);
@@ -297,14 +275,14 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
           {/* Portrait */}
           <div style={{ width: 112, height: 112, borderRadius: '50%', overflow: 'hidden', border: '4px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', background: '#f3f3f3', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {portraitObj ? (
-              <img src={portraitObj.fullSizeImage || portraitObj.thumbnail} alt="Portrait" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              <Image src={portraitObj.fullSizeImage || portraitObj.thumbnail || ''} alt="Portrait" width={112} height={112} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             ) : (
-              portraitUrl ? <img src={portraitUrl} alt="Portrait" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, color: '#aaa', fontWeight: 700 }}>?</div>
+              portraitUrl ? <Image src={portraitUrl} alt="Portrait" width={112} height={112} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, color: '#aaa', fontWeight: 700 }}>?</div>
             )}
           </div>
           {/* Flag, trait icons row (no border/bg, no career stage badge) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 10 }}>
-            {country && <img src={getFlagUrl(country)} alt={country} style={{ width: 32, height: 22, borderRadius: 3, objectFit: 'cover', border: '1.5px solid #e0ded9', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginRight: 16 }} />}
+            {country && <Image src={getFlagUrl(country)} alt={country} width={32} height={22} style={{ borderRadius: 3, objectFit: 'cover', border: '1.5px solid #e0ded9', boxShadow: '0 1px 4px rgba(0,0,0,0.07)', marginRight: 16 }} />}
             <div style={{ display: 'flex', flexDirection: 'row', gap: 0, alignItems: 'center' }}>
               {traits.map((trait, idx) => (
                 <span

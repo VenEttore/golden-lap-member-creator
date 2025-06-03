@@ -7,6 +7,15 @@ import NationalityFlag from './NationalityFlag';
 import TraitIconsCell from './TraitIconsCell';
 import { calculateMemberCost } from '../MemberCreator/MemberCreatorModern';
 
+interface IconData {
+  [key: string]: {
+    [key: string]: {
+      display_name: string;
+      description: string;
+    };
+  };
+}
+
 interface MemberTableRowProps {
   member: Member;
   isSelected: boolean;
@@ -15,7 +24,7 @@ interface MemberTableRowProps {
   onDelete: (id: string) => void;
   onPreview: (member: Member) => void;
   onDownload: (member: Member) => void;
-  iconData: any;
+  iconData: IconData;
   rowIndex: number;
   createdAt?: number;
   showStatus?: boolean;

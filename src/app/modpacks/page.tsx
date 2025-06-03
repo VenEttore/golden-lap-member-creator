@@ -2,7 +2,6 @@
 import React from 'react';
 import ModpackManager from '../../components/Modpack/ModpackManager';
 import Image from 'next/image';
-import Link from 'next/link';
 
 export default function ModpacksPage() {
   return (

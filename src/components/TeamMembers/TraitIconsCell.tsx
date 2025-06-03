@@ -5,7 +5,7 @@ import { TraitIcon } from '../Traits/TraitsSection';
 interface TraitIconsCellProps {
   traits: { name: string; display_name: string; description: string }[];
   memberType: 'driver' | 'engineer' | 'crew_chief';
-  iconData: Record<string, Record<string, { display_name: string; description: string }>>;
+  iconData: Record<string, Record<string, { display_name: string; description: string; x: number; y: number }>>;
 }
 
 export default function TraitIconsCell({ traits, memberType, iconData }: TraitIconsCellProps) {

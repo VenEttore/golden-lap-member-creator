@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import Image from 'next/image';
 import { getPortraits } from '@/utils/portraitStorage';
 import { buildCompositeUrl } from '@/utils/portraitStorage';
 import { PortraitConfig, PortraitSelection } from '@/types/portrait';
@@ -19,7 +20,7 @@ const sectionHeaderBg = '#d0cdbe';
 const sectionHeaderBorder = '#d1cfc7';
 const cardBg = '#F5F5F2';
 
-function SectionHeader({ children, centerHeader }: { children: React.ReactNode; centerHeader?: boolean }) {
+function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
@@ -83,8 +84,28 @@ const PARTS = {
 
 const SUIT_IMAGE = '/assets/GenericSuit.png';
 
-function getOptionsWithNone(entries: any[]) {
-  return [{ fileName: '', label: 'None' }, ...entries.map((e: any) => ({ fileName: e.fileName.replace(/\.png$/, ''), label: e.fileName.replace(/\.png$/, '') }))];
+interface SpriteEntry {
+  fileName: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface ManifestData {
+  sprites: SpriteEntry[];
+}
+
+interface ManifestState {
+  [key: string]: ManifestData;
+}
+
+interface ImageState {
+  [key: string]: HTMLImageElement;
+}
+
+function getOptionsWithNone(entries: SpriteEntry[]) {
+  return [{ fileName: '', label: 'None' }, ...entries.map(e => ({ fileName: e.fileName.replace(/\.png$/, ''), label: e.fileName.replace(/\.png$/, '') }))];
 }
 
 interface PortraitGeneratorPanelProps {
@@ -98,8 +119,8 @@ interface PortraitGeneratorPanelProps {
 
 const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initialConfig, initialName, onSave, onCancel, showCancel = true, noCardWrapper = false }) => {
   // State for manifests and images
-  const [manifests, setManifests] = useState<any>({});
-  const [images, setImages] = useState<any>({});
+  const [manifests, setManifests] = useState<ManifestState>({});
+  const [images, setImages] = useState<ImageState>({});
   const [suitImg, setSuitImg] = useState<HTMLImageElement | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -121,8 +142,8 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
   useEffect(() => {
     async function loadAll() {
       setLoading(true);
-      const loadedManifests: any = {};
-      const loadedImages: any = {};
+      const loadedManifests: ManifestState = {};
+      const loadedImages: ImageState = {};
       for (const key of Object.keys(PARTS)) {
         loadedManifests[key] = await fetch(PARTS[key as keyof typeof PARTS].manifest).then(r => r.json());
         loadedImages[key] = await new Promise<HTMLImageElement>(res => {
@@ -145,9 +166,21 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
   }, []);
 
   // Filter head manifest for heads, ears, neck
-  const headEntries = manifests.head?.sprites?.filter((s: any) => s.fileName.toLowerCase().startsWith('head')) || [];
-  const earEntries = manifests.head?.sprites?.filter((s: any) => s.fileName.toLowerCase().startsWith('ear')) || [];
-  const neckEntries = manifests.head?.sprites?.filter((s: any) => s.fileName.toLowerCase().startsWith('neck')) || [];
+  const headEntries = useMemo(() => 
+    manifests.head?.sprites?.filter((s: SpriteEntry) => s.fileName.toLowerCase().startsWith('head')) || [],
+    [manifests.head?.sprites]
+  );
+  
+  const earEntries = useMemo(() => 
+    manifests.head?.sprites?.filter((s: SpriteEntry) => s.fileName.toLowerCase().startsWith('ear')) || [],
+    [manifests.head?.sprites]
+  );
+  
+  const neckEntries = useMemo(() => 
+    manifests.head?.sprites?.filter((s: SpriteEntry) => s.fileName.toLowerCase().startsWith('neck')) || [],
+    [manifests.head?.sprites]
+  );
+  
   const neckEntry = neckEntries[0]; // Always use the only neck
 
   // Set defaults when manifests load or when editing
@@ -161,27 +194,7 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
         ears: prev.ears || earEntries[0].fileName.replace(/\.png$/, ''),
       }));
     }
-    // eslint-disable-next-line
-  }, [loading]);
-
-  // Ensure head/ears are always set to a valid value after reset, even if manifests load after
-  useEffect(() => {
-    if (!loading && headEntries.length && earEntries.length) {
-      setSelected(prev => {
-        let changed = false;
-        let newSelected = { ...prev };
-        if (!prev.head) {
-          newSelected.head = headEntries[0].fileName.replace(/\.png$/, '');
-          changed = true;
-        }
-        if (!prev.ears) {
-          newSelected.ears = earEntries[0].fileName.replace(/\.png$/, '');
-          changed = true;
-        }
-        return changed ? newSelected : prev;
-      });
-    }
-  }, [loading, headEntries, earEntries]);
+  }, [loading, headEntries, earEntries, neckEntry, manifests.hair?.sprites, manifests.brow?.sprites]);
 
   // Draw preview
   useEffect(() => {
@@ -205,7 +218,7 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
     ];
     for (const layer of layers) {
       let partName: string;
-      let entry: any;
+      let entry: SpriteEntry | undefined;
       if (layer.key === 'neck') {
         entry = neckEntry;
         partName = neckEntry?.fileName.replace(/\.png$/, '') || '';
@@ -213,7 +226,7 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
         partName = selected[layer.key as keyof PortraitSelection];
         if (!partName) continue;
         const manifest = manifests[layer.manifest]?.sprites;
-        entry = manifest?.find((s: any) => s.fileName.replace(/\.png$/, '') === partName);
+        entry = manifest?.find(s => s.fileName.replace(/\.png$/, '') === partName);
       }
       if (!entry) continue;
       const img = images[layer.manifest];
@@ -238,15 +251,13 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
       octx.globalCompositeOperation = 'source-over';
       ctx.drawImage(off, 0, 0);
     }
-  }, [selected, manifests, images, loading, suitImg]);
+  }, [selected, manifests, images, loading, suitImg, neckEntry]);
 
   // Helper for cycling options
   function cycleOption(part: keyof PortraitSelection, dir: -1 | 1, options: { fileName: string; label: string }[]) {
-    const idx = options.findIndex(opt => opt.fileName === selected[part]);
-    let nextIdx = idx + dir;
-    if (nextIdx < 0) nextIdx = options.length - 1;
-    if (nextIdx >= options.length) nextIdx = 0;
-    setSelected(s => ({ ...s, [part]: options[nextIdx].fileName }));
+    const currentIndex = options.findIndex(opt => opt.fileName === selected[part]);
+    const nextIndex = (currentIndex + dir + options.length) % options.length;
+    setSelected(s => ({ ...s, [part]: options[nextIndex].fileName }));
   }
 
   // Option lists with 'None' for hair-related parts
@@ -254,12 +265,11 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
   const hairBackOptions = getOptionsWithNone(manifests.hairBack?.sprites || []);
   const browOptions = getOptionsWithNone(manifests.brow?.sprites || []);
   const facialOptions = getOptionsWithNone(manifests.facial?.sprites || []);
-  const headOptions = (headEntries || []).map((e: any) => ({ fileName: e.fileName.replace(/\.png$/, ''), label: e.fileName.replace(/\.png$/, '') }));
-  const earOptions = (earEntries || []).map((e: any) => ({ fileName: e.fileName.replace(/\.png$/, ''), label: e.fileName.replace(/\.png$/, '') }));
+  const headOptions = (headEntries || []).map((e: SpriteEntry) => ({ fileName: e.fileName.replace(/\.png$/, ''), label: e.fileName.replace(/\.png$/, '') }));
+  const earOptions = (earEntries || []).map((e: SpriteEntry) => ({ fileName: e.fileName.replace(/\.png$/, ''), label: e.fileName.replace(/\.png$/, '') }));
 
   // UI row helper
   function OptionRow({ label, part, options }: { label: string; part: keyof PortraitSelection; options: { fileName: string; label: string }[] }) {
-    const idx = options.findIndex(opt => opt.fileName === selected[part]);
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 340 }}>
         <span
@@ -301,7 +311,7 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
           onFocus={e => (e.currentTarget.style.background = '#b92d2a')}
           onBlur={e => (e.currentTarget.style.background = '#fd655c')}
         >
-          <img src="/assets/ChevronLeft.png" alt="Previous" style={{ width: 18, height: 18, display: 'block' }} />
+          <Image src="/assets/ChevronLeft.png" alt="Previous" width={18} height={18} />
         </button>
         <select
           value={selected[part]}
@@ -361,7 +371,7 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
           onFocus={e => (e.currentTarget.style.background = '#b92d2a')}
           onBlur={e => (e.currentTarget.style.background = '#fd655c')}
         >
-          <img src="/assets/ChevronLeft.png" alt="Next" style={{ width: 18, height: 18, display: 'block', transform: 'rotate(180deg)' }} />
+          <Image src="/assets/ChevronLeft.png" alt="Next" width={18} height={18} style={{ transform: 'rotate(180deg)' }} />
         </button>
       </div>
     );
@@ -414,7 +424,7 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
         setSaveError('Failed to generate full-size portrait.');
         return;
       }
-    } catch (e) {
+    } catch {
       setSaveError('Error generating full-size portrait.');
       return;
     }
@@ -430,8 +440,8 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
       ...defaultConfig,
       hair: manifests.hair?.sprites?.[0]?.fileName.replace(/\.png$/, '') || '',
       brow: manifests.brow?.sprites?.[0]?.fileName.replace(/\.png$/, '') || '',
-      head: manifests.head?.sprites?.filter((s: any) => s.fileName.toLowerCase().startsWith('head'))?.[0]?.fileName.replace(/\.png$/, '') || '',
-      ears: manifests.head?.sprites?.filter((s: any) => s.fileName.toLowerCase().startsWith('ear'))?.[0]?.fileName.replace(/\.png$/, '') || '',
+      head: manifests.head?.sprites?.filter((s: SpriteEntry) => s.fileName.toLowerCase().startsWith('head'))?.[0]?.fileName.replace(/\.png$/, '') || '',
+      ears: manifests.head?.sprites?.filter((s: SpriteEntry) => s.fileName.toLowerCase().startsWith('ear'))?.[0]?.fileName.replace(/\.png$/, '') || '',
     });
     setPortraitName('');
     setSaveError('');
@@ -439,19 +449,20 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
 
   // Helper to randomize portrait
   function randomizePortrait() {
-    function pickRandom(arr: any[]) {
+    function pickRandom<T>(arr: T[]): T {
       return arr[Math.floor(Math.random() * arr.length)];
     }
-    setSelected(prev => ({
-      hair: pickRandom(manifests.hair?.sprites?.map((s: any) => s.fileName.replace(/\.png$/, '')) || ['']),
-      brow: pickRandom(manifests.brow?.sprites?.map((s: any) => s.fileName.replace(/\.png$/, '')) || ['']),
-      facial: pickRandom(['', ...(manifests.facial?.sprites?.map((s: any) => s.fileName.replace(/\.png$/, '')) || [])]),
-      hairBack: pickRandom(['', ...(manifests.hairBack?.sprites?.map((s: any) => s.fileName.replace(/\.png$/, '')) || [])]),
-      head: pickRandom(manifests.head?.sprites?.filter((s: any) => s.fileName.toLowerCase().startsWith('head')).map((s: any) => s.fileName.replace(/\.png$/, '')) || ['']),
-      ears: pickRandom(manifests.head?.sprites?.filter((s: any) => s.fileName.toLowerCase().startsWith('ear')).map((s: any) => s.fileName.replace(/\.png$/, '')) || ['']),
-      hairColor: pickRandom(HAIR_SWATCHES),
-      skinColor: pickRandom(SKIN_SWATCHES),
-    }));
+
+    const newSelected = { ...selected };
+    newSelected.hair = pickRandom(getOptionsWithNone(manifests.hair?.sprites || [])).fileName;
+    newSelected.brow = pickRandom(getOptionsWithNone(manifests.brow?.sprites || [])).fileName;
+    newSelected.facial = pickRandom(getOptionsWithNone(manifests.facial?.sprites || [])).fileName;
+    newSelected.hairBack = pickRandom(getOptionsWithNone(manifests.hairBack?.sprites || [])).fileName;
+    newSelected.head = pickRandom(headEntries).fileName.replace(/\.png$/, '');
+    newSelected.ears = pickRandom(earEntries).fileName.replace(/\.png$/, '');
+    newSelected.hairColor = pickRandom(HAIR_SWATCHES);
+    newSelected.skinColor = pickRandom(SKIN_SWATCHES);
+    setSelected(newSelected);
   }
 
   if (noCardWrapper) {
@@ -547,7 +558,7 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
                 e.currentTarget.style.background = '#fd655c';
               }}
             >
-              <img src="/assets/dice.svg" alt="Randomize" style={{ width: 24, height: 24, display: 'block', filter: 'invert(1) brightness(2)' }} />
+              <Image src="/assets/dice.svg" alt="Randomize" width={24} height={24} style={{ filter: 'invert(1) brightness(2)' }} />
             </button>
           </div>
         </div>
@@ -783,7 +794,7 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
                 e.currentTarget.style.background = '#fd655c';
               }}
             >
-              <img src="/assets/dice.svg" alt="Randomize" style={{ width: 24, height: 24, display: 'block', filter: 'invert(1) brightness(2)' }} />
+              <Image src="/assets/dice.svg" alt="Randomize" width={24} height={24} style={{ filter: 'invert(1) brightness(2)' }} />
             </button>
           </div>
         </div>

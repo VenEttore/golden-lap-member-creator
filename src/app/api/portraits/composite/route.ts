@@ -12,16 +12,9 @@ function colorToSVG(hex: string, size: number) {
 }
 
 // Helper to load and parse a JSON manifest
-async function loadManifest(jsonPath: string) {
+async function loadManifest(jsonPath: string): Promise<{ sprites: { fileName: string }[] }> {
   const raw = await fs.readFile(jsonPath, 'utf8');
   return JSON.parse(raw);
-}
-
-// Helper to find frame info in manifest
-function findFrame(manifest: any, key: string) {
-  if (!key) return null;
-  const lowerKey = key.toLowerCase();
-  return manifest.sprites.find((s: any) => s.fileName.replace(/\.png$/i, '').toLowerCase() === lowerKey);
 }
 
 const SIZE = 256;
@@ -68,12 +61,12 @@ export async function GET(req: Request) {
     // Use defaults for head/ears if not provided
     if (!config.head) {
       const headManifest = await loadManifest(path.join(process.cwd(), 'public', 'assets', PARTS_FULLSIZE.head.dir, PARTS_FULLSIZE.head.prefix + '01.json'));
-      const headEntry = headManifest.sprites.find((s: any) => s.fileName.toLowerCase().startsWith('head'));
+      const headEntry = headManifest.sprites.find((s) => s.fileName.toLowerCase().startsWith('head'));
       config.head = headEntry ? headEntry.fileName.replace(/\.png$/, '') : 'head01';
     }
     if (!config.ears) {
       const headManifest = await loadManifest(path.join(process.cwd(), 'public', 'assets', PARTS_FULLSIZE.head.dir, PARTS_FULLSIZE.head.prefix + '01.json'));
-      const earEntry = headManifest.sprites.find((s: any) => s.fileName.toLowerCase().startsWith('ear'));
+      const earEntry = headManifest.sprites.find((s) => s.fileName.toLowerCase().startsWith('ear'));
       config.ears = earEntry ? earEntry.fileName.replace(/\.png$/, '') : 'ear01';
     }
 
@@ -87,7 +80,7 @@ export async function GET(req: Request) {
       const partNum = partKey.replace(/^[A-Za-z]+/, '');
       const fileName = `${partInfo.prefix}${partNum || '01'}.png`;
       const imagePath = path.join(process.cwd(), 'public', 'assets', partInfo.dir, fileName);
-      let tint = partInfo.tint === 'hair' ? config.hairColor : config.skinColor;
+      const tint = partInfo.tint === 'hair' ? config.hairColor : config.skinColor;
       // Load the full-size part image
       const region = await sharp(imagePath)
         .resize(SIZE * 4, SIZE * 4, { kernel: sharp.kernel.lanczos3 }) // keep at 1024x1024

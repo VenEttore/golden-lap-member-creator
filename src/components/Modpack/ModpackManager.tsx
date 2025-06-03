@@ -8,15 +8,7 @@ import { faPlus, faTrash, faDownload, faEdit, faCheck } from '@fortawesome/free-
 import { Card } from '../ui/Card';
 import { Toggle } from '../ui/toggle';
 
-const cardBg = '#F5F5F2';
-const cardBorder = '#AA8B83';
-const cardShadow = 'rgba(52, 79, 58, 0.10)';
-
-interface ModpackManagerProps {
-  onSelectModpack?: (modpack: Modpack) => void;
-}
-
-export default function ModpackManager({ onSelectModpack }: ModpackManagerProps) {
+export default function ModpackManager() {
   const [modpacks, setModpacks] = useState<Modpack[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [modpackSearch, setModpackSearch] = useState('');

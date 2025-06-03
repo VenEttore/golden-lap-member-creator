@@ -1,6 +1,6 @@
 // Utility for managing Golden Lap members in localStorage
 
-import { idbGetItem, idbSetItem, idbRemoveItem } from './idbStorage';
+import { idbGetItem, idbSetItem } from './idbStorage';
 
 export interface Member {
   id: string;
@@ -29,7 +29,7 @@ export async function getMembers(): Promise<Member[]> {
   const raw = await idbGetItem(STORAGE_KEY);
   if (!raw) return [];
   try {
-    return JSON.parse(raw);
+    return JSON.parse(raw as string);
   } catch {
     return [];
   }

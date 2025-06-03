@@ -2,7 +2,38 @@
 
 export type MemberType = 'chief' | 'driver' | 'engineer';
 
-const MEMBER_DISTRIBUTIONS: any = {
+type StatDistribution = Record<number, number>;
+type ConditionalDistribution = Record<number, Record<number, number>>;
+
+type ChiefDistribution = {
+  Type: 'CrewChief';
+  base: Record<'Speed' | 'Skill', StatDistribution>;
+  conditional: Record<'MaxSpeed' | 'MaxSkill', ConditionalDistribution>;
+};
+
+type DriverGroup = {
+  base: Record<'Speed' | 'Focus', StatDistribution>;
+  conditional: Record<'MaxSpeed' | 'MaxFocus', ConditionalDistribution>;
+};
+
+type DriverDistribution = {
+  Type: 'Driver';
+  groups: Record<'none' | 'privateer' | 'rich', DriverGroup>;
+};
+
+type EngineerDistribution = {
+  Type: 'Engineer';
+  base: Record<'Expertise' | 'Precision', StatDistribution>;
+  conditional: Record<'MaxExpertise' | 'MaxPrecision', ConditionalDistribution>;
+};
+
+type MemberDistributions = {
+  chief: ChiefDistribution;
+  driver: DriverDistribution;
+  engineer: EngineerDistribution;
+};
+
+const MEMBER_DISTRIBUTIONS: MemberDistributions = {
   chief: {
     Type: 'CrewChief',
     base: {
@@ -130,7 +161,7 @@ function transformStatsToLowercase(stats: Record<string, number>): Record<string
 }
 
 export function generateMemberStats(type: MemberType, trait?: 'none' | 'privateer' | 'rich'): Record<string, number> {
-  const key = type.toLowerCase();
+  const key = type.toLowerCase() as keyof MemberDistributions;
   if (key === 'driver') {
     // Use trait-dependent logic
     let subgroup: 'none' | 'privateer' | 'rich' = 'none';
@@ -139,28 +170,28 @@ export function generateMemberStats(type: MemberType, trait?: 'none' | 'privatee
     const result: Record<string, number> = {};
     // Sample each base stat independently
     for (const baseStat in data.base) {
-      result[baseStat] = weightedChoice(data.base[baseStat]);
+      result[baseStat] = weightedChoice(data.base[baseStat as keyof typeof data.base]);
     }
     // Sample each max stat conditioned on its base
     for (const maxStat in data.conditional) {
-      const baseName = maxStat.replace(/^Max/, '');
+      const baseName = maxStat.replace(/^Max/, '') as keyof typeof data.base;
       const baseVal = result[baseName];
-      const row = data.conditional[maxStat][baseVal];
+      const row = data.conditional[maxStat as keyof typeof data.conditional][baseVal];
       result[maxStat] = weightedChoice(row);
     }
     return transformStatsToLowercase(result);
   } else {
-    const data = MEMBER_DISTRIBUTIONS[key];
+    const data = MEMBER_DISTRIBUTIONS[key] as ChiefDistribution | EngineerDistribution;
     const result: Record<string, number> = {};
     // Sample each base stat independently
     for (const baseStat in data.base) {
-      result[baseStat] = weightedChoice(data.base[baseStat]);
+      result[baseStat] = weightedChoice(data.base[baseStat as keyof typeof data.base]);
     }
     // Sample each max stat conditioned on its base
     for (const maxStat in data.conditional) {
-      const baseName = maxStat.replace(/^Max/, '');
+      const baseName = maxStat.replace(/^Max/, '') as keyof typeof data.base;
       const baseVal = result[baseName];
-      const row = data.conditional[maxStat][baseVal];
+      const row = data.conditional[maxStat as keyof typeof data.conditional][baseVal];
       result[maxStat] = weightedChoice(row);
     }
     return transformStatsToLowercase(result);

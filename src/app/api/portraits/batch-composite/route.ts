@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     if (done) break;
     body += Buffer.from(value).toString('utf8');
   }
-  let configs: any[] = [];
+  let configs: Record<string, unknown>[] = [];
   try {
     configs = JSON.parse(body);
   } catch {
@@ -71,25 +71,25 @@ export async function POST(req: Request) {
         // Use defaults for head/ears if not provided
         if (!config.head) {
           const headManifest = await loadManifest(path.join(process.cwd(), 'public', 'assets', PARTS_FULLSIZE.head.dir, PARTS_FULLSIZE.head.prefix + '01.json'));
-          const headEntry = headManifest.sprites.find((s: any) => s.fileName.toLowerCase().startsWith('head'));
+          const headEntry = headManifest.sprites.find((s: { fileName: string }) => s.fileName.toLowerCase().startsWith('head'));
           config.head = headEntry ? headEntry.fileName.replace(/\.png$/, '') : 'head01';
         }
         if (!config.ears) {
           const headManifest = await loadManifest(path.join(process.cwd(), 'public', 'assets', PARTS_FULLSIZE.head.dir, PARTS_FULLSIZE.head.prefix + '01.json'));
-          const earEntry = headManifest.sprites.find((s: any) => s.fileName.toLowerCase().startsWith('ear'));
+          const earEntry = headManifest.sprites.find((s: { fileName: string }) => s.fileName.toLowerCase().startsWith('ear'));
           config.ears = earEntry ? earEntry.fileName.replace(/\.png$/, '') : 'ear01';
         }
         // Store paths to temporary tinted parts
         const tempTintedPaths: string[] = [];
         for (const layer of LAYER_ORDER_SPRITE) {
-          let partKey = config[layer as keyof typeof config];
+          let partKey = config[layer as keyof typeof config] as string;
           if (layer === 'neck') partKey = 'neck01';
           if (!partKey) continue;
           const partInfo = PARTS_FULLSIZE[layer as keyof typeof PARTS_FULLSIZE];
           const partNum = partKey.replace(/^[A-Za-z]+/, '');
           const fileName = `${partInfo.prefix}${partNum || '01'}.png`;
           const imagePath = path.join(process.cwd(), 'public', 'assets', partInfo.dir, fileName);
-          let tint = partInfo.tint === 'hair' ? config.hairColor : config.skinColor;
+          const tint: string = partInfo.tint === 'hair' ? (config.hairColor as string) : (config.skinColor as string);
           // Load the full-size part image
           const region = await sharp(imagePath)
             .resize(SIZE * 4, SIZE * 4, { kernel: sharp.kernel.lanczos3 })

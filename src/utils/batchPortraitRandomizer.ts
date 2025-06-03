@@ -1,6 +1,6 @@
 import { addOrUpdatePortrait } from './portraitStorage';
-import { PortraitConfig } from '@/types/portrait';
-import { generateBatchPortraitsSSE, BatchPortraitResult } from './batchPortraitSSE';
+import { PortraitConfig, PortraitSelection } from '@/types/portrait';
+import { generateBatchPortraitsSSE } from './batchPortraitSSE';
 
 const PARTS = {
   hair: '/assets/hair/hair/HairSprite.json',
@@ -17,7 +17,7 @@ const HAIR_SWATCHES = [
   '#704123', '#8e7355', '#6b533c', '#493127', '#2d1b13', '#1b100b', '#131313'
 ];
 
-async function loadManifest(url: string) {
+async function loadManifest(url: string): Promise<{ sprites: { fileName: string }[] }> {
   const res = await fetch(url);
   return res.json();
 }
@@ -28,19 +28,25 @@ function pickRandom<T>(arr: T[]): T {
 
 export async function generateRandomPortraits(count: number, onPortrait?: (portrait: PortraitConfig) => void | Promise<void>) {
   // 1. Load manifests
-  const [hair, brow, facial, hairBack, head] = await Promise.all([
-    loadManifest(PARTS.hair) as Promise<{ sprites: any[] }> ,
-    loadManifest(PARTS.brow) as Promise<{ sprites: any[] }> ,
-    loadManifest(PARTS.facial) as Promise<{ sprites: any[] }> ,
-    loadManifest(PARTS.hairBack) as Promise<{ sprites: any[] }> ,
-    loadManifest(PARTS.head) as Promise<{ sprites: any[] }> ,
+  const [hair, brow, facial, hairBack, head]: [
+    { sprites: { fileName: string }[] },
+    { sprites: { fileName: string }[] },
+    { sprites: { fileName: string }[] },
+    { sprites: { fileName: string }[] },
+    { sprites: { fileName: string }[] }
+  ] = await Promise.all([
+    loadManifest(PARTS.hair),
+    loadManifest(PARTS.brow),
+    loadManifest(PARTS.facial),
+    loadManifest(PARTS.hairBack),
+    loadManifest(PARTS.head),
   ]);
-  const headEntries = (head.sprites as any[]).filter((s: any) => s.fileName.toLowerCase().startsWith('head'));
-  const earEntries = (head.sprites as any[]).filter((s: any) => s.fileName.toLowerCase().startsWith('ear'));
+  const headEntries = (head.sprites).filter((s) => s.fileName.toLowerCase().startsWith('head'));
+  const earEntries = (head.sprites).filter((s) => s.fileName.toLowerCase().startsWith('ear'));
   // 2. Generate random configs
-  const configs: any[] = [];
+  const configs: PortraitSelection[] = [];
   for (let i = 0; i < count; ++i) {
-    const config = {
+    const config: PortraitSelection = {
       hair: pickRandom(hair.sprites).fileName.replace(/\.png$/, ''),
       brow: pickRandom(brow.sprites).fileName.replace(/\.png$/, ''),
       facial: Math.random() < 0.5 ? '' : pickRandom(facial.sprites).fileName.replace(/\.png$/, ''),
@@ -54,10 +60,10 @@ export async function generateRandomPortraits(count: number, onPortrait?: (portr
   }
   // 3. Call batch endpoint and add each portrait as it arrives
   const results: PortraitConfig[] = [];
-  await generateBatchPortraitsSSE(configs, async (data: BatchPortraitResult) => {
+  await generateBatchPortraitsSSE(configs as unknown[], async (data) => {
     const portrait: PortraitConfig = {
       name: data.name,
-      config: data.config,
+      config: data.config as unknown as PortraitSelection,
       thumbnail: data.thumbnail,
       fullSizeImage: data.fullSizeImage,
       uploaded: false,

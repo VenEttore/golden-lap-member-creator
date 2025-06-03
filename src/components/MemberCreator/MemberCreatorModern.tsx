@@ -9,15 +9,13 @@ import { Toggle } from '../ui/toggle';
 import { Select } from '../ui/select';
 import TraitsSection from '../Traits/TraitsSection';
 import MemberPreviewModal from './MemberPreviewModal';
-import { saveMember, getMembers } from '@/utils/memberStorage';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { saveMember } from '@/utils/memberStorage';
+import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
-import { transliterate } from 'transliteration';
 import { generateMemberStats } from '../../utils/memberStatGenerator';
+import type { MouseEvent } from 'react';
 
 // Color palette and card styles from sample
-const coral = '#fd655c';
-const coralDark = '#b92d2a';
 const cardBorder = '#AA8B83';
 const cardShadow = 'rgba(52, 79, 58, 0.10)';
 const sectionHeaderBg = '#d0cdbe';
@@ -126,7 +124,7 @@ function PortraitSelector({ value, onChange, previewUrl }: { value: string; onCh
       (async () => {
         const portraits = await getPortraits();
         if (cancelled) return;
-        const found = portraits.find((p: any) => p.name === value);
+        const found = portraits.find((p: PortraitConfig) => p.name === value);
         setPortraitUrl(found ? (found.fullSizeImage || found.thumbnail) : null);
       })();
       return () => { cancelled = true; };
@@ -160,7 +158,7 @@ function PortraitSelector({ value, onChange, previewUrl }: { value: string; onCh
         {/* Portrait image or placeholder */}
         {hasPortrait && portraitUrl ? (
           <Image
-            src={portraitUrl}
+            src={portraitUrl || ''}
             alt={value}
             width={128}
             height={128}
@@ -294,7 +292,9 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
       placeholder={loading ? 'Loading...' : 'Select nationality'}
       renderOption={(option: ComboboxOption, selected: boolean) => (
         <>
-          <img src={option.iconUrl} alt={option.label} className="w-6 h-4 rounded mr-2" />
+          {option.iconUrl && (
+            <Image src={option.iconUrl} alt={option.label} width={24} height={16} className="w-6 h-4 rounded mr-2" />
+          )}
           <span>{option.label}</span>
           {selected && <span className="ml-auto text-coral-500 font-bold">✓</span>}
         </>
@@ -302,7 +302,9 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
       renderValue={(option: ComboboxOption | undefined) =>
         option ? (
           <span className="flex items-center gap-2">
-            <img src={option.iconUrl} alt={option.label} className="w-6 h-4 rounded" />
+            {option.iconUrl && (
+              <Image src={option.iconUrl} alt={option.label} width={24} height={16} className="w-6 h-4 rounded" />
+            )}
             <span>{option.label}</span>
           </span>
         ) : (
@@ -329,12 +331,12 @@ function StatsRow({ label, value, min, max, onDecrement, onIncrement, onDotClick
             background: '#fd655c', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(214, 72, 67, 0.10)', padding: 0, outline: 'none', cursor: value <= min ? 'not-allowed' : 'pointer', opacity: value <= min ? 0.5 : 1, transition: 'background 0.15s, box-shadow 0.15s', fontSize: 22, fontFamily: 'Figtree,Inter,sans-serif', fontWeight: 700,
           }}
           tabIndex={value <= min ? -1 : 0}
-          onMouseOver={e => { if (!(value <= min)) e.currentTarget.style.background = '#b92d2a'; }}
-          onMouseOut={e => { if (!(value <= min)) e.currentTarget.style.background = '#fd655c'; }}
-          onFocus={e => { if (!(value <= min)) e.currentTarget.style.background = '#b92d2a'; }}
-          onBlur={e => { if (!(value <= min)) e.currentTarget.style.background = '#fd655c'; }}
+          onMouseOver={(e: MouseEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#b92d2a'; }}
+          onMouseOut={(e: MouseEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#fd655c'; }}
+          onFocus={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#b92d2a'; }}
+          onBlur={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#fd655c'; }}
         >
-          <img src="/assets/ChevronLeft.png" alt="<" style={{ width: 18, height: 18, filter: 'brightness(0) invert(1)' }} />
+          <Image src="/assets/ChevronLeft.png" alt="<" width={18} height={18} style={{ filter: 'brightness(0) invert(1)' }} />
         </button>
         <div className="flex flex-row gap-[2px] items-center">
           {Array.from({ length: 10 }).map((_, i) => (
@@ -355,12 +357,12 @@ function StatsRow({ label, value, min, max, onDecrement, onIncrement, onDotClick
             background: '#fd655c', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(214, 72, 67, 0.10)', padding: 0, outline: 'none', cursor: value >= max ? 'not-allowed' : 'pointer', opacity: value >= max ? 0.5 : 1, transition: 'background 0.15s, box-shadow 0.15s', fontSize: 22, fontFamily: 'Figtree,Inter,sans-serif', fontWeight: 700,
           }}
           tabIndex={value >= max ? -1 : 0}
-          onMouseOver={e => { if (!(value >= max)) e.currentTarget.style.background = '#b92d2a'; }}
-          onMouseOut={e => { if (!(value >= max)) e.currentTarget.style.background = '#fd655c'; }}
-          onFocus={e => { if (!(value >= max)) e.currentTarget.style.background = '#b92d2a'; }}
-          onBlur={e => { if (!(value >= max)) e.currentTarget.style.background = '#fd655c'; }}
+          onMouseOver={(e: MouseEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#b92d2a'; }}
+          onMouseOut={(e: MouseEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#fd655c'; }}
+          onFocus={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#b92d2a'; }}
+          onBlur={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#fd655c'; }}
         >
-          <img src="/assets/ChevronLeft.png" alt=">" style={{ width: 18, height: 18, filter: 'brightness(0) invert(1)', transform: 'rotate(180deg)' }} />
+          <Image src="/assets/ChevronLeft.png" alt=">" width={18} height={18} style={{ filter: 'brightness(0) invert(1)', transform: 'rotate(180deg)' }} />
         </button>
       </div>
       <span className="stat-value text-xl text-gray-700 text-right pl-4 flex-shrink-0 w-8 min-w-[2ch] font-[Figtree,Inter,sans-serif] tracking-wide" style={{ fontVariantNumeric: 'tabular-nums' }}>{value}</span>
@@ -368,7 +370,7 @@ function StatsRow({ label, value, min, max, onDecrement, onIncrement, onDotClick
   );
 }
 
-interface Trait {
+interface TraitType {
   name: string;
   description: string;
   display_name: string;
@@ -420,7 +422,7 @@ interface MemberCreatorModernProps {
     type: 'driver' | 'engineer' | 'crew_chief';
     careerStage: string;
     portraitName: string;
-    traits: any[];
+    traits: TraitType[];
     stats: Record<string, number>;
     cost: number;
     decadeStartContent: boolean;
@@ -449,11 +451,11 @@ async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
     engineer: '/data/traits/engineer_traits.json',
     crew_chief: '/data/traits/crew_chief_traits.json',
   };
-  const genericTraits = await fetch('/data/traits/generic_traits.json').then(r => r.json());
-  const typeTraits = await fetch(traitFiles[type]).then(r => r.json());
+  const genericTraits: TraitType[] = await fetch('/data/traits/generic_traits.json').then(r => r.json());
+  const typeTraits: TraitType[] = await fetch(traitFiles[type]).then(r => r.json());
   // Filter out career stage traits
   const CAREER_STAGE_TRAITS = ['EarlyCareer', 'MidCareer', 'LateCareer', 'LastYear'];
-  let allTraits = [...typeTraits, ...genericTraits].filter(trait => !CAREER_STAGE_TRAITS.includes(trait.name));
+  let allTraits: TraitType[] = [...typeTraits, ...genericTraits].filter(trait => !CAREER_STAGE_TRAITS.includes(trait.name));
 
   // Special logic for drivers: Privateer and RichParents mutually exclusive, weighted
   if (type === 'driver') {
@@ -461,11 +463,11 @@ async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
     const hasRichParents = allTraits.find(t => t.name === 'RichParents');
     // Remove both from the pool for now
     allTraits = allTraits.filter(t => t.name !== 'Privateer' && t.name !== 'RichParents');
-    let specialTrait: any = null;
+    let specialTrait: TraitType | null = null;
     if (Math.random() < 0.3597) {
       // 0.7 chance for RichParents, 0.3 for Privateer
-      if (Math.random() < 0.7) specialTrait = hasRichParents;
-      else specialTrait = hasPrivateer;
+      if (Math.random() < 0.7) specialTrait = hasRichParents ?? null;
+      else specialTrait = hasPrivateer ?? null;
     }
     // Weighted trait count: 2 and 3 most common, 4 less, 1 less than 4, 0 rare, 5 rarest
     const traitCountWeights = [
@@ -477,7 +479,7 @@ async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
       0                    // 0 traits (weight 1)
     ];
     const count = traitCountWeights[Math.floor(Math.random() * traitCountWeights.length)];
-    const shuffled = allTraits.sort(() => 0.5 - Math.random());
+    const shuffled = [...allTraits].sort(() => 0.5 - Math.random());
     let traits = shuffled.slice(0, count);
     if (specialTrait) traits = [specialTrait, ...traits].slice(0, count); // Max 5 traits
     return traits;
@@ -492,16 +494,9 @@ async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
       0                    // 0 traits (weight 1)
     ];
     const count = traitCountWeights[Math.floor(Math.random() * traitCountWeights.length)];
-    const shuffled = allTraits.sort(() => 0.5 - Math.random());
+    const shuffled = [...allTraits].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
   }
-}
-
-function randStat() { return Math.floor(Math.random() * 10) + 1; }
-
-function randStatInRange(min: number, max: number) {
-  if (min > max) return min;
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export default function MemberCreatorModern({ initialValues }: MemberCreatorModernProps = {}) {
@@ -513,7 +508,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
   const [portrait, setPortrait] = useState(initialValues?.portraitName || '');
   const [portraitPreviewUrl, setPortraitPreviewUrl] = useState<string | null>(null);
   const [decadeStartContent, setDecadeStartContent] = useState(initialValues?.decadeStartContent || false);
-  const [selectedTraits, setSelectedTraits] = useState<any[]>(
+  const [selectedTraits, setSelectedTraits] = useState<TraitType[]>(
     Array.isArray(initialValues?.traits) && typeof initialValues.traits[0] !== 'string'
       ? initialValues?.traits || []
       : []
@@ -565,7 +560,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
 
   function handleStatChange(key: string, delta: number) {
     setStats(s => {
-      let next = { ...s };
+      const next = { ...s };
       const isMax = key.startsWith('max');
       if (isMax) {
         const baseKey = getBaseKey(key);
@@ -604,7 +599,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
   }
   function setStatDirect(key: string, value: number) {
     setStats(prev => {
-      let next = { ...prev, [key]: Math.max(1, value) };
+      const next = { ...prev, [key]: Math.max(1, value) };
       // If base stat, auto-increase max if needed
       const maxKey = getMaxKey(key);
       if (maxKey && !key.startsWith('max') && value > (prev[maxKey] || 1)) {
@@ -639,7 +634,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
       (async () => {
         const portraits = await getPortraits();
         if (cancelled) return;
-        const found = portraits.find((p: any) => p.name === portrait);
+        const found = portraits.find((p: PortraitConfig) => p.name === portrait);
         if (found) setPortraitPreviewUrl(found.fullSizeImage || found.thumbnail);
         else setPortraitPreviewUrl(null);
       })();
@@ -659,7 +654,6 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
 
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   async function validateMember() {
     // Name and surname required
@@ -763,20 +757,18 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
       ? CAREER_STAGES
       : CAREER_STAGES.filter(cs => cs !== 'last_year');
     const careerStage = availableStages[Math.floor(Math.random() * availableStages.length)];
-    // Map type for stat generator
-    const statGenType = type === 'crew_chief' ? 'chief' : type;
-    const traits = await fetchRandomTraits(type);
+    const traits: TraitType[] = await fetchRandomTraits(type);
     // Fetch random name from API
     let randomName = { name: '', surname: '' };
     try {
       randomName = await fetchRandomName(country);
-    } catch (e) {
+    } catch {
       // fallback: use empty strings if API fails
       randomName = { name: '', surname: '' };
     }
     let statTrait: 'none' | 'privateer' | 'rich' = 'none';
     if (type === 'driver') {
-      const traitNames = (traits || []).map((t: any) => typeof t === 'string' ? t : t.name);
+      const traitNames = (traits || []).map((t: TraitType) => t.name);
       if (traitNames.includes('Privateer')) statTrait = 'privateer';
       else if (traitNames.includes('RichParents')) statTrait = 'rich';
     }
@@ -824,7 +816,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
         className="flex flex-col"
       >
         <header className="w-full py-6 flex flex-col items-center mb-8 relative">
-          <img src="/assets/GLLogo_New.png" alt="Golden Lap Logo" style={{ maxHeight: 64, width: 'auto', marginBottom: 8 }} />
+          <Image src="/assets/GLLogo_New.png" alt="Golden Lap Logo" width={256} height={64} style={{ maxHeight: 64, width: 'auto', marginBottom: 8 }} />
           <h2 className="text-xl text-gray-600 font-bold tracking-wide font-[Figtree,Inter,sans-serif]">Team Member Creator</h2>
         </header>
         <main className="flex-1 flex flex-col items-center w-full">
@@ -857,7 +849,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
                       onFocus={e => { e.currentTarget.style.background = '#b92d2a'; }}
                       onBlur={e => { e.currentTarget.style.background = '#fd655c'; }}
                     >
-                      <img src="/assets/dice.svg" alt="Randomize" style={{ width: 24, height: 24, display: 'block', filter: 'invert(1) brightness(2)' }} />
+                      <Image src="/assets/dice.svg" alt="Randomize" width={24} height={24} style={{ display: 'block', filter: 'invert(1) brightness(2)' }} />
                     </button>
                     <div className="inline-flex rounded-md bg-[#f8f7f4] border border-[#E5E7EB] shadow-sm overflow-hidden">
                       {memberTypes.map(mt => (

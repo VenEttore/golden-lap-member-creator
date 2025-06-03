@@ -1,12 +1,12 @@
 "use client";
 import MemberCreatorModern from '../../components/MemberCreator/MemberCreatorModern';
 import { useSearchParams } from 'next/navigation';
-import { getMembers } from '../../utils/memberStorage';
+import { getMembers, Member } from '../../utils/memberStorage';
 import { useEffect, useState } from 'react';
 
 export default function MembersPage() {
   const searchParams = useSearchParams();
-  const [initialValues, setInitialValues] = useState<any>({});
+  const [initialValues, setInitialValues] = useState<Partial<Member>>({});
 
   useEffect(() => {
     async function loadInitialValues() {
@@ -20,11 +20,11 @@ export default function MembersPage() {
         }
       }
       // Parse all relevant query params
-      const vals: any = {};
+      const vals: Partial<Member> = {};
       if (searchParams.has('name')) vals.name = searchParams.get('name') || '';
       if (searchParams.has('surname')) vals.surname = searchParams.get('surname') || '';
       if (searchParams.has('country')) vals.country = (searchParams.get('country') || '').toUpperCase();
-      if (searchParams.has('type')) vals.type = searchParams.get('type') as any;
+      if (searchParams.has('type')) vals.type = searchParams.get('type') as Member['type'];
       if (searchParams.has('careerStage')) vals.careerStage = searchParams.get('careerStage') || '';
       if (searchParams.has('portraitName')) vals.portraitName = searchParams.get('portraitName') || '';
       if (searchParams.has('decadeStartContent')) vals.decadeStartContent = searchParams.get('decadeStartContent') === 'true';
@@ -33,7 +33,7 @@ export default function MembersPage() {
         try {
           vals.traits = JSON.parse(traitsRaw);
         } catch {
-          vals.traits = traitsRaw.split(',').map((s: string) => s.trim()).filter(Boolean);
+          vals.traits = traitsRaw.split(',').map((s: string) => s.trim()).filter(Boolean).map((name: string) => ({ name, display_name: name, description: '' }));
         }
       }
       if (searchParams.has('stats')) {

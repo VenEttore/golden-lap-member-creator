@@ -1,32 +1,22 @@
 "use client";
-import React, { useEffect, useState, useRef } from 'react';
-import { getMembers, deleteMember, exportMembers, importMembers, Member, saveMembersToStorage } from '../utils/memberStorage';
+import React, { useEffect, useState } from 'react';
+import { getMembers, deleteMember, Member, saveMembersToStorage } from '../utils/memberStorage';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Button } from '../components/MemberCreator/MemberCreatorModern';
 import { getPortraits } from '../utils/portraitStorage';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faTrash, faDownload, faEye, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { useTraitTooltip, TraitTooltip } from '../components/Traits/TraitTooltip';
-import { TraitIcon } from '../components/Traits/TraitsSection';
 import { calculateMemberCost } from '../components/MemberCreator/MemberCreatorModern';
-import MemberPreviewModal from '../components/MemberCreator/MemberPreviewModal';
-import { Modpack } from '../types/modpack';
-import { getModpacks, saveModpack } from '../utils/modpackStorage';
-import Link from 'next/link';
-import PortraitThumbnail from '../components/Portraits/PortraitThumbnail';
-import JSZip from 'jszip';
 import MemberTable from '../components/TeamMembers/MemberTable';
 import MemberHeader from '../components/TeamMembers/MemberHeader';
 import MemberModals from '../components/TeamMembers/MemberModals';
 import { generateRandomPortraits } from '../utils/batchPortraitRandomizer';
-import { addOrUpdatePortrait } from '../utils/portraitStorage';
-import { fetchRandomTraits, fetchRandomName, RANDOM_NATIONS, CAREER_STAGES } from '../components/MemberCreator/MemberCreatorModern';
-import { Progress } from '@/components/ui/progress';
-import { generateMemberStats } from '../utils/memberStatGenerator';
-import { generateBatchPortraitsSSE, BatchPortraitResult } from '@/utils/batchPortraitSSE';
+import { getModpacks, saveModpack } from '../utils/modpackStorage';
 import { Dialog, DialogContent, DialogTitle, DialogFooter } from '../components/ui/dialog';
 import { Toggle } from '../components/ui/toggle';
+import JSZip from 'jszip';
+import { Modpack } from '../types/modpack';
+import { fetchRandomTraits, RANDOM_NATIONS, CAREER_STAGES } from '../components/MemberCreator/MemberCreatorModern';
+import { generateMemberStats } from '../utils/memberStatGenerator';
+import { PortraitConfig } from '../types/portrait';
 
 const cardBorder = '#AA8B83';
 const cardShadow = 'rgba(52, 79, 58, 0.10)';
@@ -68,44 +58,6 @@ function Card({ children, title }: { children: React.ReactNode; title: string })
   );
 }
 
-function PortraitThumbnailForMember({ portraitName }: { portraitName?: string }) {
-  const [portrait, setPortrait] = React.useState<any>(null);
-  React.useEffect(() => {
-    if (!portraitName) {
-      setPortrait(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const portraits = await getPortraits();
-      if (cancelled) return;
-      const found = portraits.find((p: any) => p.name === portraitName);
-      setPortrait(found || null);
-    })();
-    return () => { cancelled = true; };
-  }, [portraitName]);
-  if (portrait) {
-    return <PortraitThumbnail portrait={portrait} />;
-  }
-  return <div style={{ width: 40, height: 40, borderRadius: 6, background: '#ece9e2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontWeight: 700, fontSize: 22 }}>?</div>;
-}
-
-function NationalityFlag({ country }: { country?: string }) {
-  if (!country) {
-    return <div style={{ width: 32, height: 22, background: '#ece9e2', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontWeight: 700, fontSize: 16 }}>?</div>;
-  }
-  const code = country.toLowerCase();
-  return (
-    <img
-      src={`https://flagcdn.com/${code}.svg`}
-      alt={country}
-      width={32}
-      height={22}
-      style={{ borderRadius: 4, border: '1px solid #ccc', background: '#fff', objectFit: 'cover', display: 'block' }}
-    />
-  );
-}
-
 async function downloadMemberJson(member: Member) {
   // Create a new ZIP file
   const zip = new JSZip();
@@ -121,7 +73,7 @@ async function downloadMemberJson(member: Member) {
 
   // Map traits to string array if needed
   let traitNames = Array.isArray(member.traits)
-    ? member.traits.map((t: any) => typeof t === 'string' ? t : t.name)
+    ? member.traits.map((t: { name: string } | string) => typeof t === 'string' ? t : t.name)
     : [];
   // Ensure career stage trait is present
   const CAREER_STAGE_TRAIT_MAP: Record<string, string> = {
@@ -146,7 +98,7 @@ async function downloadMemberJson(member: Member) {
   }
 
   // Map stats by type
-  let stats: Record<string, number> = member.stats || {};
+  const stats: Record<string, number> = member.stats || {};
   let exportStats: Record<string, number> = {};
   if (member.type === 'driver') {
     exportStats = {
@@ -172,7 +124,7 @@ async function downloadMemberJson(member: Member) {
   }
 
   // Compose export object
-  const exportObj: any = {
+  const exportObj: Record<string, unknown> = {
     Name: member.name,
     Surname: member.surname,
     CountryCode: member.country,
@@ -191,7 +143,7 @@ async function downloadMemberJson(member: Member) {
   // Add portrait if available
   if (member.portraitName) {
     const portraits = await getPortraits();
-    const portrait = portraits.find((p: any) => p.name === member.portraitName);
+    const portrait = portraits.find((p: { name: string }) => p.name === member.portraitName);
     if (portrait && portrait.fullSizeImage) {
       // Convert data URL to Blob
       const res = await fetch(portrait.fullSizeImage);
@@ -211,12 +163,10 @@ async function downloadMemberJson(member: Member) {
   URL.revokeObjectURL(url);
 }
 
-type MemberType = 'driver' | 'engineer' | 'crew_chief';
 type Trait = { name: string; display_name: string; description: string };
 
 export default function HomePage() {
   const [members, setMembers] = useState<Member[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [previewMember, setPreviewMember] = useState<Member | null>(null);
   const [previewPortraitUrl, setPreviewPortraitUrl] = useState<string | null>(null);
@@ -224,7 +174,7 @@ export default function HomePage() {
   const [showModpackDialog, setShowModpackDialog] = useState(false);
   const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState(false);
   const [modpacks, setModpacks] = useState<Modpack[]>([]);
-  const [iconData, setIconData] = useState<any>(null);
+  const [iconData, setIconData] = useState<Record<string, Record<string, { display_name: string; description: string }>> | null>(null);
   const [showRandomModal, setShowRandomModal] = useState(false);
   const [randomCounts, setRandomCounts] = useState({ driver: 1, engineer: 1, crew_chief: 1 });
   const [isGenerating, setIsGenerating] = useState(false);
@@ -272,38 +222,6 @@ export default function HomePage() {
     getMembers().then(setMembers);
   }
 
-  function getTraitInfo(traitName: string): Trait {
-    return iconData[traitName] || { display_name: traitName, description: '', name: traitName };
-  }
-
-  function TraitIconsCell({ traits, memberType }: { traits: Trait[]; memberType: MemberType }) {
-    if (!iconData || !iconData[memberType] || !traits) return null;
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    return (
-      <div className="flex flex-row gap-1 items-center">
-        {traits.map((trait: Trait, idx: number) => {
-          const info = getTraitInfo(trait.name);
-          const { tooltip, showTooltip, moveTooltip, hideTooltip } = useTraitTooltip();
-          return (
-            <span
-              key={trait.name}
-              className="trait-icon-hover-area"
-              onMouseEnter={e => { showTooltip(e, info.display_name, info.description); setHoveredIndex(idx); }}
-              onMouseMove={moveTooltip}
-              onMouseLeave={() => { hideTooltip(); setHoveredIndex(null); }}
-              style={{ display: 'inline-block', cursor: 'pointer' }}
-            >
-              <TraitIcon traitName={trait.name} memberType={memberType} iconData={iconData[memberType]} size={24} />
-              {tooltip && hoveredIndex === idx && (
-                <TraitTooltip {...tooltip} />
-              )}
-            </span>
-          );
-        })}
-      </div>
-    );
-  }
-
   function handleAdd() {
     router.push('/members');
   }
@@ -316,42 +234,15 @@ export default function HomePage() {
     deleteMember(id).then(refreshMembers);
   }
 
-  async function handleExport() {
-    const json = await exportMembers();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'members.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const json = e.target?.result as string;
-      importMembers(json).then(refreshMembers);
-    };
-    reader.readAsText(file);
-  }
-
   async function handlePreview(member: Member) {
     setPreviewMember(member);
     if (member.portraitName) {
       const portraits = await getPortraits();
-      const portrait = portraits.find((p: any) => p.name === member.portraitName);
+      const portrait = portraits.find((p: { name: string }) => p.name === member.portraitName);
       setPreviewPortraitUrl(portrait?.fullSizeImage || null);
     } else {
       setPreviewPortraitUrl(null);
     }
-  }
-
-  function formatMemberType(type: string) {
-    if (type === 'crew_chief') return 'Crew Chief';
-    return type.charAt(0).toUpperCase() + type.slice(1);
   }
 
   function handleSelectMember(id: string) {
@@ -450,7 +341,7 @@ export default function HomePage() {
     setGenerationPhase('portraits');
 
     // Prepare type list
-    let typeList: ('driver' | 'engineer' | 'crew_chief')[] = [];
+    const typeList: ('driver' | 'engineer' | 'crew_chief')[] = [];
     for (let i = 0; i < driver; ++i) typeList.push('driver');
     for (let i = 0; i < engineer; ++i) typeList.push('engineer');
     for (let i = 0; i < crew_chief; ++i) typeList.push('crew_chief');
@@ -473,7 +364,7 @@ export default function HomePage() {
         country: string;
         careerStage: string;
         statGenType: string;
-        traits: any[];
+        traits: Trait[];
         stats: Record<string, number>;
         decadeStartContent: boolean;
       }> = [];
@@ -484,7 +375,7 @@ export default function HomePage() {
         // Determine trait for stat generation
         let statTrait: 'none' | 'privateer' | 'rich' = 'none';
         if (type === 'driver') {
-          const traitNames = (traits || []).map((t: any) => typeof t === 'string' ? t : t.name);
+          const traitNames = (traits || []).map((t: Trait) => t.name);
           if (traitNames.includes('Privateer')) statTrait = 'privateer';
           else if (traitNames.includes('RichParents')) statTrait = 'rich';
         }
@@ -517,7 +408,7 @@ export default function HomePage() {
 
     // 2. Start portrait generation (async, streaming progress)
     let portraitProgress = 0;
-    const portraits: any[] = [];
+    const portraits: PortraitConfig[] = [];
     await new Promise<void>(resolve => {
       generateRandomPortraits(totalMembers, async (portrait) => {
         portraits.push(portrait);
@@ -588,24 +479,20 @@ export default function HomePage() {
       search = lower.replace(traitMatch[0], '').trim();
     }
     // Extract nation/nationality
-    let nation = '';
-    let nationMatch = search.match(/(?:nation|nationality):([\w\s]+)/);
-    if (nationMatch) {
-      nation = nationMatch[1].trim();
-      search = search.replace(nationMatch[0], '').trim();
+    const nation = lower.match(/(?:nation|nationality):([\w\s]+)/)?.[1].trim();
+    if (nation) {
+      search = search.replace(/(?:nation|nationality):([\w\s]+)/, '').trim();
     }
     // Extract type
-    let type = '';
-    let typeMatch = search.match(/type:([\w_]+)/);
-    if (typeMatch) {
-      type = typeMatch[1].trim();
-      search = search.replace(typeMatch[0], '').trim();
+    const type = lower.match(/type:([\w_]+)/)?.[1].trim();
+    if (type) {
+      search = search.replace(/type:([\w_]+)/, '').trim();
     }
     // Remaining is general search
     const general = search.trim();
     // Check traits (OR)
     if (traitList.length > 0) {
-      const memberTraitNames = (member.traits || []).map((t: any) => typeof t === 'string' ? t.toLowerCase() : (t.name || '').toLowerCase());
+      const memberTraitNames = (member.traits || []).map((t: { name: string } | string) => typeof t === 'string' ? t.toLowerCase() : (t.name || '').toLowerCase());
       if (!traitList.some(tr => memberTraitNames.includes(tr))) return false;
     }
     // Check nation
@@ -750,11 +637,11 @@ export default function HomePage() {
                     cursor: 'pointer',
                     marginLeft: 4,
                   }}
-                  onMouseEnter={e => setShowSearchHelp(true)}
-                  onMouseLeave={e => setShowSearchHelp(false)}
-                  onFocus={e => setShowSearchHelp(true)}
-                  onBlur={e => setShowSearchHelp(false)}
-                  onClick={e => setShowSearchHelp(v => !v)}
+                  onMouseEnter={() => setShowSearchHelp(true)}
+                  onMouseLeave={() => setShowSearchHelp(false)}
+                  onFocus={() => setShowSearchHelp(true)}
+                  onBlur={() => setShowSearchHelp(false)}
+                  onClick={() => setShowSearchHelp(v => !v)}
                 >
                   ?
                 </button>
@@ -794,16 +681,16 @@ export default function HomePage() {
               onSelectMember={handleSelectMember}
               onSelectAll={(selected) => {
                 if (selected) {
-                  setSelectedMembers(members.map(m => m.id));
-                } else {
-                  setSelectedMembers([]);
-                }
-              }}
+                              setSelectedMembers(members.map(m => m.id));
+                            } else {
+                              setSelectedMembers([]);
+                            }
+                          }}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onPreview={handlePreview}
               onDownload={downloadMemberJson}
-              iconData={iconData}
+              iconData={iconData || {}}
               currentPage={currentPage}
               rowsPerPage={rowsPerPage}
               sorts={sorts}
@@ -813,20 +700,20 @@ export default function HomePage() {
             {/* Pagination controls */}
             <div className="flex items-center justify-between mt-4">
               <div className="flex items-center gap-2">
-                <button
+                          <button
                   onClick={() => handlePageChange(1)}
                   disabled={currentPage === 1}
                   className="px-2 py-1 rounded bg-[#ece9e2] text-[#333] disabled:opacity-50"
                 >
                   First
-                </button>
-                <button
+                          </button>
+                          <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                   className="px-2 py-1 rounded bg-[#ece9e2] text-[#333] disabled:opacity-50"
                 >
                   Prev
-                </button>
+                          </button>
                 {/* Page numbers with ellipsis */}
                 {(() => {
                   const pages = [];
@@ -853,14 +740,14 @@ export default function HomePage() {
                   }
                   for (let i = start; i <= end; ++i) {
                     pages.push(
-                      <button
+                          <button
                         key={i}
                         onClick={() => handlePageChange(i)}
                         className={`px-2 py-1 rounded ${currentPage === i ? 'bg-[#fd655c] text-white' : 'bg-[#ece9e2] text-[#333]'}`}
                         style={{ fontWeight: currentPage === i ? 700 : 400 }}
                       >
                         {i}
-                      </button>
+                          </button>
                     );
                   }
                   if (end < totalPages) {
@@ -957,8 +844,8 @@ export default function HomePage() {
                       transition: 'background 0.15s',
                     }}
                     aria-label="Close"
-                    onMouseOver={e => (e.currentTarget.style.background = '#b92d2a')}
-                    onMouseOut={e => (e.currentTarget.style.background = '#fd655c')}
+                    onMouseOver={(e: React.MouseEvent<HTMLButtonElement>) => (e.currentTarget.style.background = '#b92d2a')}
+                    onMouseOut={(e: React.MouseEvent<HTMLButtonElement>) => (e.currentTarget.style.background = '#fd655c')}
                   >
                     ×
                   </button>
@@ -1092,14 +979,14 @@ export default function HomePage() {
                     borderRadius: 12,
                     transition: 'width 0.3s cubic-bezier(.4,1.6,.6,1)',
                   }} />
-                </div>
+                      </div>
                 <div className="text-sm" style={{ color: '#222', marginTop: 2, textAlign: 'center' }}>
                   {generationStep} of {generationTotal} complete
-                </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
       </main>
     </div>
   );

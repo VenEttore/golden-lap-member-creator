@@ -3,13 +3,13 @@ import { Member } from './memberStorage';
 import { getMembers } from './memberStorage';
 import { getPortraits } from './portraitStorage';
 import JSZip from 'jszip';
-import { idbGetItem, idbSetItem, idbRemoveItem } from './idbStorage';
+import { idbGetItem, idbSetItem } from './idbStorage';
 
 // Storage functions
 export async function getModpacks(): Promise<Modpack[]> {
   if (typeof window === 'undefined') return [];
   const raw = await idbGetItem('modpacks');
-  if (!raw) return [];
+  if (!raw || typeof raw !== 'string') return [];
   try {
     return JSON.parse(raw);
   } catch {
@@ -53,8 +53,8 @@ export async function exportModpack(modpack: Modpack, options: ModpackExportOpti
   // Helper to format member JSON and filename as in docs
   function formatMemberForExport(member: Member) {
     // Traits as string[]
-    let traitNames = Array.isArray(member.traits)
-      ? member.traits.map((t: any) => typeof t === 'string' ? t : t.name)
+    let traitNames: string[] = Array.isArray(member.traits)
+      ? member.traits.map((t: { name: string } | string) => typeof t === 'string' ? t : t.name)
       : [];
     // Ensure career stage trait is present
     const CAREER_STAGE_TRAIT_MAP: Record<string, string> = {
@@ -76,7 +76,7 @@ export async function exportModpack(modpack: Modpack, options: ModpackExportOpti
       portraitPath = `Textures/Portraits/${member.portraitName.replace(/\.png$/i, '')}.png`;
     }
     // Stats by type
-    let stats: Record<string, number> = member.stats || {};
+    const stats: Record<string, number> = member.stats || {};
     let exportStats: Record<string, number> = {};
     if (member.type === 'driver') {
       exportStats = {
@@ -101,7 +101,7 @@ export async function exportModpack(modpack: Modpack, options: ModpackExportOpti
       };
     }
     // Compose export object
-    const exportObj: any = {
+    const exportObj: Record<string, unknown> = {
       Name: member.name,
       Surname: member.surname,
       CountryCode: member.country,
@@ -140,32 +140,4 @@ export async function exportModpack(modpack: Modpack, options: ModpackExportOpti
   }
   
   return await zip.generateAsync({ type: 'blob' });
-}
-
-function getMemberTypeSpecificFields(member: Member): Record<string, any> {
-  switch (member.type) {
-    case 'driver':
-      return {
-        Speed: member.stats.speed,
-        MaxSpeed: member.stats.maxSpeed,
-        Focus: member.stats.focus,
-        MaxFocus: member.stats.maxFocus
-      };
-    case 'engineer':
-      return {
-        Expertise: member.stats.expertise,
-        MaxExpertise: member.stats.maxExpertise,
-        Precision: member.stats.precision,
-        MaxPrecision: member.stats.maxPrecision
-      };
-    case 'crew_chief':
-      return {
-        Speed: member.stats.speed,
-        MaxSpeed: member.stats.maxSpeed,
-        Skill: member.stats.skill,
-        MaxSkill: member.stats.maxSkill
-      };
-    default:
-      return {};
-  }
 } 

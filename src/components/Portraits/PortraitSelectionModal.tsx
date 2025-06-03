@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PortraitEditorModal from './PortraitEditorModal';
 import { PortraitConfig } from '@/types/portrait';
@@ -21,7 +22,7 @@ interface PortraitSelectionModalProps {
 }
 
 // Helper to get cropped image as data URL (returns 1024x1024 PNG)
-async function getCroppedImg(imageSrc: string, croppedAreaPixels: { x: number; y: number; width: number; height: number }, zoom: number): Promise<string> {
+async function getCroppedImg(imageSrc: string, croppedAreaPixels: { x: number; y: number; width: number; height: number }): Promise<string> {
   return new Promise((resolve, reject) => {
     const image = new window.Image();
     image.onload = () => {
@@ -107,7 +108,7 @@ function CropperModal({ open, imageSrc, onCancel, onCropComplete }: CropperModal
             maxZoom={4}
             onCropChange={setCrop}
             onZoomChange={setZoom}
-            onCropComplete={(_: any, croppedPixels: { x: number; y: number; width: number; height: number }) => setCroppedAreaPixels(croppedPixels)}
+            onCropComplete={(_croppedArea, croppedPixels) => setCroppedAreaPixels(croppedPixels)}
           />
         </div>
         <div style={{ margin: '24px 0 8px 0', width: 400, marginLeft: 'auto', marginRight: 'auto' }}>
@@ -143,7 +144,7 @@ function CropperModal({ open, imageSrc, onCancel, onCropComplete }: CropperModal
           <button
             onClick={async () => {
               if (croppedAreaPixels) {
-                const cropped = await getCroppedImg(imageSrc, croppedAreaPixels, zoom);
+                const cropped = await getCroppedImg(imageSrc, croppedAreaPixels);
                 onCropComplete(cropped);
               }
             }}
@@ -182,7 +183,7 @@ export default function PortraitSelectionModal({ isOpen, onClose, onSelect }: Po
       const loaded = await getPortraits();
       setPortraits(loaded);
     })();
-  }, [showEditor, showGallery]);
+  }, [showEditor]);
 
   // Filter portraits by search
   const filteredPortraits = portraits.filter(p =>
@@ -416,11 +417,17 @@ export default function PortraitSelectionModal({ isOpen, onClose, onSelect }: Po
                   className="flex flex-col items-center gap-2 p-2 rounded hover:bg-[#edeadf] transition-colors"
                   style={{ background: cardBg, border: `1.5px solid ${cardBorder}`, color: textColor }}
                 >
-                  <img
+                  <Image
                     src={portrait.fullSizeImage || portrait.thumbnail}
                     alt={portrait.name}
-                    className="w-24 h-24 rounded-full object-cover border-2 border-[#AA8B83]"
-                    style={{ background: '#e5e5e5' }}
+                    width={96}
+                    height={96}
+                    className="rounded-full object-cover border-2 border-[#AA8B83]"
+                    style={{ 
+                      background: '#e5e5e5',
+                      width: '6rem',
+                      height: '6rem'
+                    }}
                   />
                   <span className="text-sm font-medium"
                     style={{
