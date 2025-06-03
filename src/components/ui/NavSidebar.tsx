@@ -1,12 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { deleteAllPortraits } from '@/utils/portraitStorage';
 import { idbClear } from '@/utils/idbStorage';
-
-// Unicode Trigram of Heaven (☰)
-const HAMBURGER = '\u2630';
 
 export default function NavSidebar() {
   const [open, setOpen] = useState(false);

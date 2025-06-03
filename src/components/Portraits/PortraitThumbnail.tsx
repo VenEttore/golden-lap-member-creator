@@ -1,10 +1,11 @@
 import React from 'react';
+import Image from 'next/image';
 import { PortraitConfig } from '@/types/portrait';
 
 function PortraitThumbnail({ portrait }: { portrait: PortraitConfig }) {
   const url = portrait.fullSizeImage || portrait.thumbnail;
   return (
-    <img
+    <Image
       src={url}
       alt={portrait.name}
       width={40}

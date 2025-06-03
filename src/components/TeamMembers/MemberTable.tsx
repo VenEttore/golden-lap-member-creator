@@ -11,19 +11,12 @@ interface MemberTableProps {
   onDelete: (id: string) => void;
   onPreview: (member: Member) => void;
   onDownload: (member: Member) => void;
-  iconData: any;
+  iconData: Record<string, Record<string, { display_name: string; description: string }>>;
   currentPage: number;
   rowsPerPage: number;
   sorts: Array<{ key: string, direction: 'asc' | 'desc' }>;
   onSort: (key: string, event?: React.MouseEvent) => void;
 }
-
-const SORTABLE_HEADERS = [
-  { key: 'name', label: 'Name' },
-  { key: 'country', label: 'Nationality' },
-  { key: 'type', label: 'Type' },
-  { key: 'cost', label: 'Cost' },
-];
 
 const CAREER_STAGE_LABELS: Record<string, string> = {
   early: 'Early Career',
@@ -50,7 +43,7 @@ export default function MemberTable({
   if (members.length === 0) {
     return (
       <div style={{ color: '#888', fontSize: 18, textAlign: 'center', padding: 32 }}>
-        No members found. Click "Add Member" to create your first team member.
+        No members found. Click &quot;Add Member&quot; to create your first team member.
       </div>
     );
   }
