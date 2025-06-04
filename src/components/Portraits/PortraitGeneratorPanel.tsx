@@ -442,15 +442,16 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
     }
 
     const newSelected = { ...selected };
-    newSelected.hair = pickRandom(getOptionsWithNone(manifests.hair?.sprites || [])).fileName;
-    newSelected.brow = pickRandom(getOptionsWithNone(manifests.brow?.sprites || [])).fileName;
-    newSelected.facial = pickRandom(getOptionsWithNone(manifests.facial?.sprites || [])).fileName;
-    newSelected.hairBack = pickRandom(getOptionsWithNone(manifests.hairBack?.sprites || [])).fileName;
+    newSelected.hair = pickRandom(getOptionsWithNone(manifests.hair?.sprites || []).filter(o => o.fileName)).fileName;
+    newSelected.brow = pickRandom(getOptionsWithNone(manifests.brow?.sprites || []).filter(o => o.fileName)).fileName;
+    newSelected.facial = Math.random() < 0.5 ? '' : pickRandom(getOptionsWithNone(manifests.facial?.sprites || []).filter(o => o.fileName)).fileName;
+    newSelected.hairBack = Math.random() < 0.5 ? '' : pickRandom(getOptionsWithNone(manifests.hairBack?.sprites || []).filter(o => o.fileName)).fileName;
     newSelected.head = pickRandom(headEntries).fileName.replace(/\.png$/, '');
     newSelected.ears = pickRandom(earEntries).fileName.replace(/\.png$/, '');
     newSelected.hairColor = pickRandom(HAIR_SWATCHES);
     newSelected.skinColor = pickRandom(SKIN_SWATCHES);
     setSelected(newSelected);
+    setPortraitName(`RandomPortrait_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`);
   }
 
   if (noCardWrapper) {

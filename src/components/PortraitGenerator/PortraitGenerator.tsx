@@ -83,6 +83,10 @@ interface ImageState {
   [key: string]: HTMLImageElement;
 }
 
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 export default function PortraitGenerator() {
   // State for manifests and images
   const [manifests, setManifests] = useState<ManifestState>({});
@@ -272,6 +276,29 @@ export default function PortraitGenerator() {
     setPortraits(loadedPortraits);
   }
 
+  // Randomize portrait handler
+  async function handleRandomize() {
+    if (!manifests.hair?.sprites || !manifests.brow?.sprites || !manifests.facial?.sprites || 
+        !manifests.hairBack?.sprites || !manifests.head?.sprites) return;
+
+    const headEntries = manifests.head.sprites.filter(s => s.fileName.toLowerCase().startsWith('head'));
+    const earEntries = manifests.head.sprites.filter(s => s.fileName.toLowerCase().startsWith('ear'));
+
+    const newSelected = {
+      hair: pickRandom(manifests.hair.sprites).fileName.replace(/\.png$/, ''),
+      brow: pickRandom(manifests.brow.sprites).fileName.replace(/\.png$/, ''),
+      facial: Math.random() < 0.5 ? '' : pickRandom(manifests.facial.sprites).fileName.replace(/\.png$/, ''),
+      hairBack: Math.random() < 0.5 ? '' : pickRandom(manifests.hairBack.sprites).fileName.replace(/\.png$/, ''),
+      head: pickRandom(headEntries).fileName.replace(/\.png$/, ''),
+      ears: pickRandom(earEntries).fileName.replace(/\.png$/, ''),
+      hairColor: pickRandom(HAIR_SWATCHES),
+      skinColor: pickRandom(SKIN_SWATCHES),
+    };
+
+    setSelected(newSelected);
+    setPortraitName(`RandomPortrait_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`);
+  }
+
   if (loading) return <div>Loading assets...</div>;
 
   // Helper for cycling options
@@ -335,6 +362,12 @@ export default function PortraitGenerator() {
             className="px-4 py-2 bg-[#fd655c] text-white rounded-full hover:bg-[#b92d2a] transition-colors"
           >
             Download
+          </button>
+          <button
+            onClick={handleRandomize}
+            className="px-4 py-2 bg-[#fd655c] text-white rounded-full hover:bg-[#b92d2a] transition-colors"
+          >
+            Randomize
           </button>
           <button
             onClick={handleSavePortrait}
