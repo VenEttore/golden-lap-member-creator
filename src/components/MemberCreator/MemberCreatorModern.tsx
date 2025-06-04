@@ -230,11 +230,19 @@ const careerStages = [
 function NationalityCombobox({ value, onChange }: { value: string; onChange: (code: string) => void }) {
   const [countryList, setCountryList] = React.useState<ComboboxOption[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    fetch('https://flagcdn.com/en/codes.json')
-      .then(res => res.json())
-      .then(data => {
+    let isMounted = true;
+
+    async function fetchCountries() {
+      try {
+        const res = await fetch('https://flagcdn.com/en/codes.json');
+        if (!res.ok) throw new Error('Failed to fetch countries');
+        
+        const data = await res.json();
+        if (!isMounted) return;
+
         const arr = Object.entries(data)
           .filter(([code]) => {
             // Filter out US states
@@ -281,8 +289,61 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
         arr.sort((a, b) => a.label.localeCompare(b.label));
         setCountryList(arr);
         setLoading(false);
-      });
+      } catch (err) {
+        if (!isMounted) return;
+        setError(err instanceof Error ? err.message : 'Failed to load countries');
+        setLoading(false);
+      }
+    }
+
+    fetchCountries();
+    return () => { isMounted = false; };
   }, []);
+
+  const renderOption = React.useCallback((option: ComboboxOption, selected: boolean) => (
+    <>
+      {option.iconUrl && (
+        <Image 
+          src={option.iconUrl} 
+          alt={option.label} 
+          width={24} 
+          height={16} 
+          className="w-6 h-4 rounded mr-2"
+          loading="lazy"
+        />
+      )}
+      <span>{option.label}</span>
+      {selected && <span className="ml-auto text-coral-500 font-bold">✓</span>}
+    </>
+  ), []);
+
+  const renderValue = React.useCallback((option: ComboboxOption | undefined) =>
+    option ? (
+      <span className="flex items-center gap-2">
+        {option.iconUrl && (
+          <Image 
+            src={option.iconUrl} 
+            alt={option.label} 
+            width={24} 
+            height={16} 
+            className="w-6 h-4 rounded"
+            loading="lazy"
+          />
+        )}
+        <span>{option.label}</span>
+      </span>
+    ) : (
+      <span className="text-gray-400">{loading ? 'Loading...' : error || 'Select nationality'}</span>
+    )
+  , [loading, error]);
+
+  if (error) {
+    return (
+      <div className="text-red-500 text-sm">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <Combobox
@@ -290,28 +351,10 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
       value={value}
       onChange={onChange}
       placeholder={loading ? 'Loading...' : 'Select nationality'}
-      renderOption={(option: ComboboxOption, selected: boolean) => (
-        <>
-          {option.iconUrl && (
-            <Image src={option.iconUrl} alt={option.label} width={24} height={16} className="w-6 h-4 rounded mr-2" />
-          )}
-          <span>{option.label}</span>
-          {selected && <span className="ml-auto text-coral-500 font-bold">✓</span>}
-        </>
-      )}
-      renderValue={(option: ComboboxOption | undefined) =>
-        option ? (
-          <span className="flex items-center gap-2">
-            {option.iconUrl && (
-              <Image src={option.iconUrl} alt={option.label} width={24} height={16} className="w-6 h-4 rounded" />
-            )}
-            <span>{option.label}</span>
-          </span>
-        ) : (
-          <span className="text-gray-400">{loading ? 'Loading...' : 'Select nationality'}</span>
-        )
-      }
-      className=""
+      renderOption={renderOption}
+      renderValue={renderValue}
+      ariaLabel="Nationality"
+      ariaDescription="Select a nationality from the list"
     />
   );
 }
