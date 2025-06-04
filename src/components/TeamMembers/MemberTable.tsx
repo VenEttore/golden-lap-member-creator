@@ -11,7 +11,7 @@ interface MemberTableProps {
   onDelete: (id: string) => void;
   onPreview: (member: Member) => void;
   onDownload: (member: Member) => void;
-  iconData: Record<string, Record<string, { display_name: string; description: string }>>;
+  iconData: Record<string, Record<string, { display_name: string; description: string; x: number; y: number }>>;
   currentPage: number;
   rowsPerPage: number;
   sorts: Array<{ key: string, direction: 'asc' | 'desc' }>;

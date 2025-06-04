@@ -174,7 +174,7 @@ export default function HomePage() {
   const [showModpackDialog, setShowModpackDialog] = useState(false);
   const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState(false);
   const [modpacks, setModpacks] = useState<Modpack[]>([]);
-  const [iconData, setIconData] = useState<Record<string, Record<string, { display_name: string; description: string }>> | null>(null);
+  const [iconData, setIconData] = useState<Record<string, Record<string, { display_name: string; description: string; x: number; y: number }>> | null>(null);
   const [showRandomModal, setShowRandomModal] = useState(false);
   const [randomCounts, setRandomCounts] = useState({ driver: 1, engineer: 1, crew_chief: 1 });
   const [isGenerating, setIsGenerating] = useState(false);
@@ -232,7 +232,7 @@ export default function HomePage() {
 
   function handleDelete(id: string) {
     deleteMember(id).then(refreshMembers);
-  }
+      }
 
   async function handlePreview(member: Member) {
     setPreviewMember(member);
@@ -242,7 +242,7 @@ export default function HomePage() {
       setPreviewPortraitUrl(portrait?.fullSizeImage || null);
     } else {
       setPreviewPortraitUrl(null);
-    }
+  }
   }
 
   function handleSelectMember(id: string) {
@@ -704,14 +704,14 @@ export default function HomePage() {
                   onClick={() => handlePageChange(1)}
                   disabled={currentPage === 1}
                   className="px-2 py-1 rounded bg-[#ece9e2] text-[#333] disabled:opacity-50"
-                >
+                          >
                   First
                           </button>
                           <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                   className="px-2 py-1 rounded bg-[#ece9e2] text-[#333] disabled:opacity-50"
-                >
+                          >
                   Prev
                           </button>
                 {/* Page numbers with ellipsis */}
@@ -745,7 +745,7 @@ export default function HomePage() {
                         onClick={() => handlePageChange(i)}
                         className={`px-2 py-1 rounded ${currentPage === i ? 'bg-[#fd655c] text-white' : 'bg-[#ece9e2] text-[#333]'}`}
                         style={{ fontWeight: currentPage === i ? 700 : 400 }}
-                      >
+                          >
                         {i}
                           </button>
                     );

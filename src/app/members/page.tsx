@@ -1,10 +1,11 @@
 "use client";
+import React, { Suspense } from 'react';
 import MemberCreatorModern from '../../components/MemberCreator/MemberCreatorModern';
 import { useSearchParams } from 'next/navigation';
 import { getMembers, Member } from '../../utils/memberStorage';
 import { useEffect, useState } from 'react';
 
-export default function MembersPage() {
+function MembersPageInner() {
   const searchParams = useSearchParams();
   const [initialValues, setInitialValues] = useState<Partial<Member>>({});
 
@@ -47,4 +48,12 @@ export default function MembersPage() {
   }, [searchParams]);
 
   return <MemberCreatorModern initialValues={initialValues} />;
+}
+
+export default function MembersPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MembersPageInner />
+    </Suspense>
+  );
 } 

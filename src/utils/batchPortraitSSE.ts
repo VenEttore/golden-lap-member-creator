@@ -1,8 +1,10 @@
 // Utility for batch portrait generation using SSE
 
-interface PortraitConfig {
+import { PortraitSelection } from '@/types/portrait';
+
+export interface PortraitConfig {
   name: string;
-  config: Record<string, unknown>;
+  config: PortraitSelection;
   thumbnail: string;
   fullSizeImage: string;
 }
@@ -15,8 +17,8 @@ export interface BatchPortraitResult {
 }
 
 export async function generateBatchPortraitsSSE(
-  configs: PortraitConfig[],
-  onPortrait: (result: BatchPortraitResult) => void
+  configs: PortraitSelection[],
+  onPortrait: (result: { name: string; config: PortraitSelection; thumbnail: string; fullSizeImage: string }) => void
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const controller = new AbortController();

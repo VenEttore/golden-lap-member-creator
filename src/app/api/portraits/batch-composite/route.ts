@@ -21,13 +21,13 @@ const SIZE = 256;
 const THUMB_SIZE = 64;
 
 const PARTS_FULLSIZE = {
-  hair: { dir: 'hair/hair', prefix: 'Hair', tint: 'hair' },
-  brow: { dir: 'hair/brow', prefix: 'HairBrow', tint: 'hair' },
-  facial: { dir: 'hair/facial', prefix: 'HairFacial', tint: 'hair' },
-  hairBack: { dir: 'hairBack', prefix: 'HairBack', tint: 'hair' },
-  head: { dir: 'head', prefix: 'Head', tint: 'skin' },
-  ears: { dir: 'head/ears', prefix: 'Ear', tint: 'skin' },
-  neck: { dir: 'head', prefix: 'Neck', tint: 'skin' },
+  hair: { dir: 'hair/hair', prefix: 'Hair', tint: 'hair', manifest: 'HairSprite.json' },
+  brow: { dir: 'hair/brow', prefix: 'HairBrow', tint: 'hair', manifest: 'HairBrowSprite.json' },
+  facial: { dir: 'hair/facial', prefix: 'HairFacial', tint: 'hair', manifest: 'HairFacialSprite.json' },
+  hairBack: { dir: 'hairBack', prefix: 'HairBack', tint: 'hair', manifest: 'HairBackSprite.json' },
+  head: { dir: 'head', prefix: 'Head', tint: 'skin', manifest: 'HeadSprite.json' },
+  ears: { dir: 'head/ears', prefix: 'Ear', tint: 'skin', manifest: 'HeadSprite.json' },
+  neck: { dir: 'head', prefix: 'Neck', tint: 'skin', manifest: 'HeadSprite.json' },
 };
 
 const LAYER_ORDER_SPRITE = [
@@ -70,12 +70,12 @@ export async function POST(req: Request) {
         config.neck = 'neck01';
         // Use defaults for head/ears if not provided
         if (!config.head) {
-          const headManifest = await loadManifest(path.join(process.cwd(), 'public', 'assets', PARTS_FULLSIZE.head.dir, PARTS_FULLSIZE.head.prefix + '01.json'));
+          const headManifest = await loadManifest(path.join(process.cwd(), 'public', 'assets', PARTS_FULLSIZE.head.dir, PARTS_FULLSIZE.head.manifest));
           const headEntry = headManifest.sprites.find((s: { fileName: string }) => s.fileName.toLowerCase().startsWith('head'));
           config.head = headEntry ? headEntry.fileName.replace(/\.png$/, '') : 'head01';
         }
         if (!config.ears) {
-          const headManifest = await loadManifest(path.join(process.cwd(), 'public', 'assets', PARTS_FULLSIZE.head.dir, PARTS_FULLSIZE.head.prefix + '01.json'));
+          const headManifest = await loadManifest(path.join(process.cwd(), 'public', 'assets', PARTS_FULLSIZE.head.dir, PARTS_FULLSIZE.head.manifest));
           const earEntry = headManifest.sprites.find((s: { fileName: string }) => s.fileName.toLowerCase().startsWith('ear'));
           config.ears = earEntry ? earEntry.fileName.replace(/\.png$/, '') : 'ear01';
         }

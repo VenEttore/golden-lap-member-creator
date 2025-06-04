@@ -12,6 +12,8 @@ interface IconData {
     [key: string]: {
       display_name: string;
       description: string;
+      x: number;
+      y: number;
     };
   };
 }

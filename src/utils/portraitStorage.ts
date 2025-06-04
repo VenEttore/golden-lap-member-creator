@@ -9,7 +9,7 @@ export async function getPortraits(): Promise<PortraitConfig[]> {
   const raw = await idbGetItem(PORTRAITS_KEY);
   if (!raw) return [];
   try {
-    return JSON.parse(raw);
+    return JSON.parse(raw as string);
   } catch {
     return [];
   }

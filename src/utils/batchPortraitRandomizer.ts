@@ -1,5 +1,5 @@
 import { addOrUpdatePortrait } from './portraitStorage';
-import { PortraitConfig, PortraitSelection } from '@/types/portrait';
+import { PortraitConfig as StoragePortraitConfig, PortraitSelection } from '@/types/portrait';
 import { generateBatchPortraitsSSE } from './batchPortraitSSE';
 
 const PARTS = {
@@ -26,7 +26,7 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export async function generateRandomPortraits(count: number, onPortrait?: (portrait: PortraitConfig) => void | Promise<void>) {
+export async function generateRandomPortraits(count: number, onPortrait?: (portrait: StoragePortraitConfig) => void | Promise<void>) {
   // 1. Load manifests
   const [hair, brow, facial, hairBack, head]: [
     { sprites: { fileName: string }[] },
@@ -59,11 +59,11 @@ export async function generateRandomPortraits(count: number, onPortrait?: (portr
     configs.push(config);
   }
   // 3. Call batch endpoint and add each portrait as it arrives
-  const results: PortraitConfig[] = [];
-  await generateBatchPortraitsSSE(configs as unknown[], async (data) => {
-    const portrait: PortraitConfig = {
+  const results: StoragePortraitConfig[] = [];
+  await generateBatchPortraitsSSE(configs, async (data: { name: string; config: PortraitSelection; thumbnail: string; fullSizeImage: string }) => {
+    const portrait: StoragePortraitConfig = {
       name: data.name,
-      config: data.config as unknown as PortraitSelection,
+      config: data.config,
       thumbnail: data.thumbnail,
       fullSizeImage: data.fullSizeImage,
       uploaded: false,
