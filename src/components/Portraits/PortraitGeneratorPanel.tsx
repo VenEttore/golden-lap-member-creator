@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { getPortraits } from '@/utils/portraitStorage';
-import { buildCompositeUrl } from '@/utils/portraitStorage';
+import { compositePortraitFrontend } from '@/utils/portraitStorage';
 import { PortraitConfig, PortraitSelection } from '@/types/portrait';
 
 // Preset color swatches
@@ -410,20 +410,8 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
     // Always fetch the backend composite and store as fullSizeImage
     let fullSizeImage = undefined;
     try {
-      const compositeUrl = buildCompositeUrl(configCopy);
-      const response = await fetch(compositeUrl);
-      if (response.ok) {
-        const blob = await response.blob();
-        fullSizeImage = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      } else {
-        setSaveError('Failed to generate full-size portrait.');
-        return;
-      }
+      const { fullSizeImage: img } = await compositePortraitFrontend(configCopy);
+      fullSizeImage = img;
     } catch {
       setSaveError('Error generating full-size portrait.');
       return;

@@ -1,4 +1,4 @@
-import { addOrUpdatePortrait } from './portraitStorage';
+import { addOrUpdatePortraitsBatch } from './portraitStorage';
 import { PortraitConfig as StoragePortraitConfig, PortraitSelection } from '@/types/portrait';
 import { generateBatchPortraitsSSE } from './batchPortraitSSE';
 
@@ -68,9 +68,10 @@ export async function generateRandomPortraits(count: number, onPortrait?: (portr
       fullSizeImage: data.fullSizeImage,
       uploaded: false,
     };
-    await addOrUpdatePortrait(portrait);
     results.push(portrait);
     if (onPortrait) await onPortrait(portrait);
   });
+  // Batch-safe write
+  await addOrUpdatePortraitsBatch(results);
   return results;
 } 
