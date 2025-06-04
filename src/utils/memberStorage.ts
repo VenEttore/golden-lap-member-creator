@@ -1,58 +1,25 @@
 // Utility for managing Golden Lap members in localStorage
 
-import { idbGetItem, idbSetItem } from './idbStorage';
-
-export interface Member {
-  id: string;
-  name: string;
-  surname: string;
-  country: string;
-  careerStage: string;
-  portraitName?: string;
-  traits: { name: string; display_name: string; description: string }[];
-  stats: Record<string, number>;
-  cost: number;
-  type: 'driver' | 'engineer' | 'crew_chief';
-  decadeStartContent?: boolean;
-  createdAt?: number;
-  // Add any other fields as needed
-}
-
-const STORAGE_KEY = 'goldenLapMembers';
+import { db, Member } from './db';
 
 function generateId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+export type { Member };
+
 export async function getMembers(): Promise<Member[]> {
   if (typeof window === 'undefined') return [];
-  const raw = await idbGetItem(STORAGE_KEY);
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw as string);
-  } catch {
-    return [];
-  }
+  return await db.members.toArray();
 }
 
 export async function saveMember(member: Member): Promise<void> {
-  const members = await getMembers();
-  let updated = false;
   if (!member.id) member.id = generateId();
-  const newMembers = members.map(m => {
-    if (m.id === member.id) {
-      updated = true;
-      return member;
-    }
-    return m;
-  });
-  if (!updated) newMembers.push(member);
-  await idbSetItem(STORAGE_KEY, JSON.stringify(newMembers));
+  await db.members.put(member);
 }
 
 export async function deleteMember(id: string): Promise<void> {
-  const members = (await getMembers()).filter(m => m.id !== id);
-  await idbSetItem(STORAGE_KEY, JSON.stringify(members));
+  await db.members.delete(id);
 }
 
 export async function exportMembers(): Promise<string> {
@@ -67,19 +34,28 @@ export async function importMembers(json: string, merge = true): Promise<void> {
     return;
   }
   if (!Array.isArray(imported)) return;
+
   if (merge) {
+    // Get existing members
     const existing = await getMembers();
-    // Merge by id, prefer imported
     const byId: Record<string, Member> = {};
+    
+    // Add existing members to map
     for (const m of existing) byId[m.id] = m;
+    
+    // Update with imported members
     for (const m of imported) byId[m.id] = m;
-    await idbSetItem(STORAGE_KEY, JSON.stringify(Object.values(byId)));
+    
+    // Bulk put all members
+    await db.members.bulkPut(Object.values(byId));
   } else {
-    await idbSetItem(STORAGE_KEY, JSON.stringify(imported));
+    // Clear existing and add new
+    await db.members.clear();
+    await db.members.bulkPut(imported);
   }
 }
 
 export async function saveMembersToStorage(members: Member[]): Promise<void> {
   if (typeof window === 'undefined') return;
-  await idbSetItem('goldenLapMembers', JSON.stringify(members));
+  await db.members.bulkPut(members);
 } 

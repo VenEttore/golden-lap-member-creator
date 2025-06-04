@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { idbClear } from '@/utils/idbStorage';
+import { db } from '@/utils/db';
 
 export default function NavSidebar() {
   const [open, setOpen] = useState(false);
@@ -20,7 +20,7 @@ export default function NavSidebar() {
 
   async function handleDeleteAllData() {
     if (window.confirm('Are you sure you want to delete ALL app data? This cannot be undone.')) {
-      await idbClear();
+      await db.delete();
       window.location.reload();
     }
   }

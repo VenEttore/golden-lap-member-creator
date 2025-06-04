@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { db } from '@/utils/db';
+import { PortraitConfig } from '@/types/portrait';
 
 // Utility to load a JSON manifest
 async function loadManifest<T>(path: string): Promise<T> {
@@ -69,45 +71,6 @@ function getOptionsWithNone(entries: SpriteEntry[]) {
 }
 
 // Type for the portrait selection/config
-interface PortraitSelection {
-  hair: string;
-  brow: string;
-  facial: string;
-  hairBack: string;
-  head: string;
-  ears: string;
-  hairColor: string;
-  skinColor: string;
-}
-
-interface PortraitConfig {
-  name: string;
-  config: PortraitSelection;
-  thumbnail: string; // data URL
-}
-
-function savePortraitToStorage(portrait: PortraitConfig) {
-  const portraits = getPortraitsFromStorage();
-  portraits.push(portrait);
-  localStorage.setItem('portraits', JSON.stringify(portraits));
-}
-
-function getPortraitsFromStorage(): PortraitConfig[] {
-  if (typeof window === 'undefined') return [];
-  const raw = localStorage.getItem('portraits');
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-
-function deletePortraitFromStorage(name: string) {
-  const portraits = getPortraitsFromStorage().filter(p => p.name !== name);
-  localStorage.setItem('portraits', JSON.stringify(portraits));
-}
-
 interface ManifestData {
   sprites: SpriteEntry[];
 }
@@ -120,7 +83,7 @@ interface ImageState {
   [key: string]: HTMLImageElement;
 }
 
-const PortraitGenerator: React.FC = () => {
+export default function PortraitGenerator() {
   // State for manifests and images
   const [manifests, setManifests] = useState<ManifestState>({});
   const [images, setImages] = useState<ImageState>({});
@@ -187,7 +150,11 @@ const PortraitGenerator: React.FC = () => {
 
   // Load saved portraits on mount
   useEffect(() => {
-    setPortraits(getPortraitsFromStorage());
+    const loadPortraits = async () => {
+      const loadedPortraits = await getPortraitsFromStorage();
+      setPortraits(loadedPortraits);
+    };
+    loadPortraits();
   }, []);
 
   // Draw preview
@@ -270,7 +237,7 @@ const PortraitGenerator: React.FC = () => {
   }
 
   // Save portrait handler
-  function handleSavePortrait() {
+  async function handleSavePortrait() {
     setSaveError('');
     const name = portraitName.trim();
     if (!name) {
@@ -284,20 +251,25 @@ const PortraitGenerator: React.FC = () => {
     const thumbnail = generateThumbnail();
     const configCopy = JSON.parse(JSON.stringify(selected));
     const newPortrait: PortraitConfig = { name, config: configCopy, thumbnail };
-    savePortraitToStorage(newPortrait);
-    setPortraits(getPortraitsFromStorage());
+    await savePortraitToStorage(newPortrait);
+    const loadedPortraits = await getPortraitsFromStorage();
+    setPortraits(loadedPortraits);
     setPortraitName('');
   }
 
   // Load portrait handler
-  function handleLoadPortrait(portrait: PortraitConfig) {
+  async function handleLoadPortrait(portrait: PortraitConfig) {
     setSelected(portrait.config);
+    setPortraitName(portrait.name);
+    const loadedPortraits = await getPortraitsFromStorage();
+    setPortraits(loadedPortraits);
   }
 
   // Delete portrait handler
-  function handleDeletePortrait(name: string) {
-    deletePortraitFromStorage(name);
-    setPortraits(getPortraitsFromStorage());
+  async function handleDeletePortrait(name: string) {
+    await deletePortraitFromStorage(name);
+    const loadedPortraits = await getPortraitsFromStorage();
+    setPortraits(loadedPortraits);
   }
 
   if (loading) return <div>Loading assets...</div>;
@@ -449,6 +421,17 @@ const PortraitGenerator: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
-export default PortraitGenerator; 
+async function savePortraitToStorage(portrait: PortraitConfig) {
+  await db.portraits.put(portrait);
+}
+
+function getPortraitsFromStorage(): Promise<PortraitConfig[]> {
+  if (typeof window === 'undefined') return Promise.resolve([]);
+  return db.portraits.toArray();
+}
+
+async function deletePortraitFromStorage(name: string) {
+  await db.portraits.delete(name);
+} 
