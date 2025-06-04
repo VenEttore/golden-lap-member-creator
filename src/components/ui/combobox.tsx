@@ -1,7 +1,8 @@
 import * as React from "react"
 import { ChevronsUpDown } from "lucide-react"
-import ReactDOM from "react-dom"
-
+import { Portal } from "@radix-ui/react-portal"
+import { useCallback, useMemo, useRef, useState } from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 export interface ComboboxOption {
@@ -18,6 +19,8 @@ interface ComboboxProps {
   renderOption?: (option: ComboboxOption, selected: boolean) => React.ReactNode
   renderValue?: (option: ComboboxOption | undefined) => React.ReactNode
   className?: string
+  ariaLabel?: string
+  ariaDescription?: string
 }
 
 export function Combobox({
@@ -28,30 +31,42 @@ export function Combobox({
   renderOption,
   renderValue,
   className = "",
+  ariaLabel = "Combobox",
+  ariaDescription = "Select an option from the list",
 }: ComboboxProps) {
-  const [open, setOpen] = React.useState(false)
-  const [search, setSearch] = React.useState("")
-  const [highlightedIndex, setHighlightedIndex] = React.useState(0)
-  const buttonRef = React.useRef<HTMLButtonElement>(null)
-  const dropdownRef = React.useRef<HTMLUListElement>(null)
-  const searchInputRef = React.useRef<HTMLInputElement>(null)
-  const [dropdownStyle, setDropdownStyle] = React.useState<React.CSSProperties>({})
-  const selected = options.find(o => o.value === value)
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const [highlightedIndex, setHighlightedIndex] = useState(0)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLUListElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
+  const selected = useMemo(() => options.find(o => o.value === value), [options, value])
+
+  const filtered = useMemo(() => 
+    search
+      ? options.filter(o => o.label.toLowerCase().includes(search.toLowerCase()))
+      : options,
+    [options, search]
+  )
+
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (
+      buttonRef.current &&
+      !buttonRef.current.contains(e.target as Node) &&
+      dropdownRef.current &&
+      !dropdownRef.current.contains(e.target as Node)
+    ) {
+      setOpen(false)
+    }
+  }, [])
 
   React.useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        buttonRef.current &&
-        !buttonRef.current.contains(e.target as Node) &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setOpen(false)
-      }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => document.removeEventListener("mousedown", handleClickOutside)
     }
-    if (open) document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [open])
+  }, [open, handleClickOutside])
 
   React.useEffect(() => {
     if (open && buttonRef.current) {
@@ -66,15 +81,11 @@ export function Combobox({
     }
   }, [open])
 
-  const filtered = search
-    ? options.filter(o => o.label.toLowerCase().includes(search.toLowerCase()))
-    : options
-
   React.useEffect(() => {
     if (open) setHighlightedIndex(0)
   }, [open, search])
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!open) return
     if (e.key === "ArrowDown") {
       e.preventDefault()
@@ -88,8 +99,10 @@ export function Combobox({
         setOpen(false)
         setSearch("")
       }
+    } else if (e.key === "Escape") {
+      setOpen(false)
     }
-  }
+  }, [open, filtered, highlightedIndex, onChange])
 
   React.useEffect(() => {
     if (open && dropdownRef.current && filtered.length > 0) {
@@ -99,6 +112,12 @@ export function Combobox({
       }
     }
   }, [highlightedIndex, open, filtered.length])
+
+  const handleOptionClick = useCallback((option: ComboboxOption) => {
+    onChange(option.value)
+    setOpen(false)
+    setSearch("")
+  }, [onChange])
 
   return (
     <div className={cn("relative", className)}>
@@ -111,6 +130,8 @@ export function Combobox({
         )}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-label={ariaLabel}
+        aria-describedby="combobox-description"
         onClick={() => setOpen(o => !o)}
       >
         <span className="flex items-center gap-2">
@@ -118,11 +139,14 @@ export function Combobox({
         </span>
         <ChevronsUpDown className="ml-2 h-4 w-4 text-gray-400" />
       </button>
-      {open &&
-        ReactDOM.createPortal(
+      <span id="combobox-description" className="sr-only">{ariaDescription}</span>
+      {open && (
+        <Portal>
           <div
             className="rounded-md bg-white border border-gray-200 shadow-lg"
             style={dropdownStyle}
+            role="listbox"
+            aria-label={ariaLabel}
           >
             <div className="px-3 py-2 border-b border-gray-100 bg-white sticky top-0 z-10">
               <input
@@ -134,16 +158,19 @@ export function Combobox({
                 placeholder="Search..."
                 className="w-full rounded border border-gray-200 px-2 py-1 text-base focus:outline-none focus:border-coral-500 text-[#222] placeholder-[#888]"
                 autoFocus
+                aria-label="Search options"
+                aria-controls="combobox-options"
               />
             </div>
             <ul
               ref={dropdownRef}
+              id="combobox-options"
               className="max-h-64 overflow-y-auto py-1"
               tabIndex={-1}
               role="listbox"
             >
               {filtered.length === 0 ? (
-                <li className="px-4 py-2 text-gray-400">No results</li>
+                <li className="px-4 py-2 text-gray-400" role="option">No results</li>
               ) : (
                 filtered.map((option, idx) => {
                   const isSelected = option.value === value
@@ -166,11 +193,7 @@ export function Combobox({
                       role="option"
                       aria-selected={isSelected}
                       onMouseEnter={() => setHighlightedIndex(idx)}
-                      onClick={() => {
-                        onChange(option.value)
-                        setOpen(false)
-                        setSearch("")
-                      }}
+                      onClick={() => handleOptionClick(option)}
                     >
                       {renderOption ? renderOption(option, isSelected) : option.label}
                     </li>
@@ -178,9 +201,9 @@ export function Combobox({
                 })
               )}
             </ul>
-          </div>,
-          document.body
-        )}
+          </div>
+        </Portal>
+      )}
     </div>
   )
 } 
