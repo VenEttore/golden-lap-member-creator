@@ -1,7 +1,5 @@
 import { PortraitConfig } from '@/types/portrait';
-import { idbGetItem, idbSetItem, idbRemoveItem } from './idbStorage';
-
-const PORTRAITS_KEY = 'goldenlap:portraits';
+import { db } from './db';
 
 // Types for manifests and sprites
 interface SpriteEntry {
@@ -18,18 +16,12 @@ interface ManifestData {
 // Get all portraits
 export async function getPortraits(): Promise<PortraitConfig[]> {
   if (typeof window === 'undefined') return [];
-  const raw = await idbGetItem(PORTRAITS_KEY);
-  if (!raw) return [];
-  try {
-    return JSON.parse(raw as string);
-  } catch {
-    return [];
-  }
+  return await db.portraits.toArray();
 }
 
 // Save all portraits
 export async function savePortraits(portraits: PortraitConfig[]): Promise<void> {
-  await idbSetItem(PORTRAITS_KEY, JSON.stringify(portraits));
+  await db.portraits.bulkPut(portraits);
 }
 
 // Add or update a portrait
@@ -52,7 +44,7 @@ export async function deletePortrait(name: string): Promise<void> {
 
 // Delete all portraits
 export async function deleteAllPortraits(): Promise<void> {
-  await idbRemoveItem(PORTRAITS_KEY);
+  await db.portraits.clear();
 }
 
 // Unified async portrait display URL getter

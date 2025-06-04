@@ -3,37 +3,20 @@ import { Member } from './memberStorage';
 import { getMembers } from './memberStorage';
 import { getPortraits } from './portraitStorage';
 import JSZip from 'jszip';
-import { idbGetItem, idbSetItem } from './idbStorage';
+import { db } from './db';
 
 // Storage functions
 export async function getModpacks(): Promise<Modpack[]> {
   if (typeof window === 'undefined') return [];
-  const raw = await idbGetItem('modpacks');
-  if (!raw || typeof raw !== 'string') return [];
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return await db.modpacks.toArray();
 }
 
 export async function saveModpack(modpack: Modpack): Promise<void> {
-  const modpacks = await getModpacks();
-  const existingIndex = modpacks.findIndex(m => m.id === modpack.id);
-  
-  if (existingIndex >= 0) {
-    modpacks[existingIndex] = modpack;
-  } else {
-    modpacks.push(modpack);
-  }
-  
-  await idbSetItem('modpacks', JSON.stringify(modpacks));
+  await db.modpacks.put(modpack);
 }
 
 export async function deleteModpack(id: string): Promise<void> {
-  const modpacks: Modpack[] = await getModpacks();
-  const filtered = modpacks.filter((m: Modpack) => m.id !== id);
-  await idbSetItem('modpacks', JSON.stringify(filtered));
+  await db.modpacks.delete(id);
 }
 
 // Export functions
