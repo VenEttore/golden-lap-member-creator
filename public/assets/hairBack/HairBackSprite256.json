@@ -2,43 +2,43 @@
   "sprites": [
     {
       "fileName": "hairback01.png",
-      "width": 1024,
-      "height": 1024,
+      "width": 256,
+      "height": 256,
       "x": 0,
       "y": 0
     },
     {
       "fileName": "hairback02.png",
-      "width": 1024,
-      "height": 1024,
-      "x": 1024,
+      "width": 256,
+      "height": 256,
+      "x": 256,
       "y": 0
     },
     {
       "fileName": "hairback03.png",
-      "width": 1024,
-      "height": 1024,
-      "x": 2048,
+      "width": 256,
+      "height": 256,
+      "x": 512,
       "y": 0
     },
     {
       "fileName": "hairback04.png",
-      "width": 1024,
-      "height": 1024,
-      "x": 3072,
+      "width": 256,
+      "height": 256,
+      "x": 768,
       "y": 0
     },
     {
       "fileName": "hairback05.png",
-      "width": 1024,
-      "height": 1024,
+      "width": 256,
+      "height": 256,
       "x": 0,
-      "y": 1024
+      "y": 256
     }
   ],
   "packMode": "grid",
   "padding": 0,
   "backgroundColor": "rgba(0, 0, 0, 0)",
-  "spriteSheetWidth": 4096,
-  "spriteSheetHeight": 4096
+  "spriteSheetWidth": 1024,
+  "spriteSheetHeight": 1024
 }

@@ -2,106 +2,106 @@
   "sprites": [
     {
       "fileName": "hairfacial01.png",
-      "width": 256,
-      "height": 256,
+      "width": 1024,
+      "height": 1024,
       "x": 0,
       "y": 0
     },
     {
       "fileName": "hairfacial02.png",
-      "width": 256,
-      "height": 256,
-      "x": 256,
+      "width": 1024,
+      "height": 1024,
+      "x": 1024,
       "y": 0
     },
     {
       "fileName": "hairfacial03.png",
-      "width": 256,
-      "height": 256,
-      "x": 512,
+      "width": 1024,
+      "height": 1024,
+      "x": 2048,
       "y": 0
     },
     {
       "fileName": "hairfacial04.png",
-      "width": 256,
-      "height": 256,
-      "x": 768,
+      "width": 1024,
+      "height": 1024,
+      "x": 3072,
       "y": 0
     },
     {
       "fileName": "hairfacial05.png",
-      "width": 256,
-      "height": 256,
+      "width": 1024,
+      "height": 1024,
       "x": 0,
-      "y": 256
+      "y": 1024
     },
     {
       "fileName": "hairfacial06.png",
-      "width": 256,
-      "height": 256,
-      "x": 256,
-      "y": 256
+      "width": 1024,
+      "height": 1024,
+      "x": 1024,
+      "y": 1024
     },
     {
       "fileName": "hairfacial07.png",
-      "width": 256,
-      "height": 256,
-      "x": 512,
-      "y": 256
+      "width": 1024,
+      "height": 1024,
+      "x": 2048,
+      "y": 1024
     },
     {
       "fileName": "hairfacial08.png",
-      "width": 256,
-      "height": 256,
-      "x": 768,
-      "y": 256
+      "width": 1024,
+      "height": 1024,
+      "x": 3072,
+      "y": 1024
     },
     {
       "fileName": "hairfacial09.png",
-      "width": 256,
-      "height": 256,
+      "width": 1024,
+      "height": 1024,
       "x": 0,
-      "y": 512
+      "y": 2048
     },
     {
       "fileName": "hairfacial10.png",
-      "width": 256,
-      "height": 256,
-      "x": 256,
-      "y": 512
+      "width": 1024,
+      "height": 1024,
+      "x": 1024,
+      "y": 2048
     },
     {
       "fileName": "hairfacial11.png",
-      "width": 256,
-      "height": 256,
-      "x": 512,
-      "y": 512
+      "width": 1024,
+      "height": 1024,
+      "x": 2048,
+      "y": 2048
     },
     {
       "fileName": "hairfacial12.png",
-      "width": 256,
-      "height": 256,
-      "x": 768,
-      "y": 512
+      "width": 1024,
+      "height": 1024,
+      "x": 3072,
+      "y": 2048
     },
     {
       "fileName": "hairfacial13.png",
-      "width": 256,
-      "height": 256,
+      "width": 1024,
+      "height": 1024,
       "x": 0,
-      "y": 768
+      "y": 3072
     },
     {
       "fileName": "hairfacial14.png",
-      "width": 256,
-      "height": 256,
-      "x": 256,
-      "y": 768
+      "width": 1024,
+      "height": 1024,
+      "x": 1024,
+      "y": 3072
     }
   ],
   "packMode": "grid",
   "padding": 0,
   "backgroundColor": "rgba(0, 0, 0, 0)",
-  "spriteSheetWidth": 1024,
-  "spriteSheetHeight": 1024
+  "spriteSheetWidth": 4096,
+  "spriteSheetHeight": 4096
 }
