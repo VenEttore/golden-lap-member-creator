@@ -1,4 +1,4 @@
-# Golden Lap Modding Tool
+# Golden Lap Member Creator
 
 A modern web app for creating, editing, and managing custom team members and portraits for the game **Golden Lap**.
 
