@@ -14,9 +14,10 @@ import { Dialog, DialogContent, DialogTitle, DialogFooter } from '../components/
 import { Toggle } from '../components/ui/toggle';
 import JSZip from 'jszip';
 import { Modpack } from '../types/modpack';
-import { fetchRandomTraits, RANDOM_NATIONS, CAREER_STAGES } from '../components/MemberCreator/MemberCreatorModern';
+import { fetchRandomTraits, RANDOM_NATIONS } from '../components/MemberCreator/MemberCreatorModern';
 import { generateMemberStats } from '../utils/memberStatGenerator';
 import { PortraitConfig } from '../types/portrait';
+import { weightedCareerStage } from '@/utils/randomUtils';
 
 const cardBorder = '#AA8B83';
 const cardShadow = 'rgba(52, 79, 58, 0.10)';
@@ -387,10 +388,7 @@ export default function HomePage() {
         else if (type === 'engineer') decadeStartContent = Math.random() < 0.3333;
         else if (type === 'crew_chief') decadeStartContent = Math.random() < 0.3333;
         // Filter career stages if decadeStartContent is false
-        const availableStages = decadeStartContent
-          ? CAREER_STAGES
-          : CAREER_STAGES.filter(cs => cs !== 'last_year');
-        const careerStage = availableStages[Math.floor(Math.random() * availableStages.length)];
+        const careerStage = weightedCareerStage(type);
         arr.push({
           type,
           name: nameObj?.name?.first || 'Random',
