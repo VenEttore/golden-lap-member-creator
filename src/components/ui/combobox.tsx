@@ -2,7 +2,6 @@ import * as React from "react"
 import { ChevronsUpDown } from "lucide-react"
 import { Portal } from "@radix-ui/react-portal"
 import { useCallback, useMemo, useRef, useState } from "react"
-import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 export interface ComboboxOption {
