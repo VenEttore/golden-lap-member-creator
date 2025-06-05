@@ -5,6 +5,7 @@ import { Button } from './MemberCreatorModern';
 import { TraitTooltip, useTraitTooltip } from '../Traits/TraitTooltip';
 import { getPortraits } from '@/utils/portraitStorage';
 import Image from 'next/image';
+import { codeToFlagCdn } from '@/utils/flagUtils';
 
 const cardBg = '#f7f5f2';
 const coral = '#fd655c';
@@ -188,8 +189,7 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
 
   function getFlagUrl(country: string) {
     if (!country) return '';
-    // If already a 2-letter code, use as is; else try to map to code (fallback: lowercased string)
-    const code = country.length === 2 ? country.toLowerCase() : country.toLowerCase();
+    const code = codeToFlagCdn(country);
     return `https://flagcdn.com/${code}.svg`;
   }
 

@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import { generateMemberStats } from '../../utils/memberStatGenerator';
 import type { MouseEvent } from 'react';
+import { codeToFlagCdn } from '@/utils/flagUtils';
 
 // Color palette and card styles from sample
 const cardBorder = '#AA8B83';
@@ -234,58 +235,17 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
 
   React.useEffect(() => {
     let isMounted = true;
-
     async function fetchCountries() {
       try {
-        const res = await fetch('https://flagcdn.com/en/codes.json');
+        const res = await fetch('/data/codes.json');
         if (!res.ok) throw new Error('Failed to fetch countries');
-        
         const data = await res.json();
         if (!isMounted) return;
-
-        const arr = Object.entries(data)
-          .filter(([code]) => {
-            // Filter out US states
-            if (code.toLowerCase().startsWith('us-')) return false;
-            
-            // Filter out UK sub-nationalities
-            const ukSubNationalities = ['gb-eng', 'gb-sct', 'gb-wls', 'gb-nir'];
-            if (ukSubNationalities.includes(code.toLowerCase())) return false;
-            
-            // Filter out other sub-nationalities (add more as needed)
-            const otherSubNationalities = [
-              'cn-hk', // Hong Kong
-              'cn-mo', // Macau
-              'pt-20', // Azores
-              'pt-30', // Madeira
-              'es-ce', // Ceuta
-              'es-ml', // Melilla
-              'fr-bl', // Saint Barthélemy
-              'fr-mf', // Saint Martin
-              'fr-nc', // New Caledonia
-              'fr-pf', // French Polynesia
-              'fr-re', // Réunion
-              'fr-yt', // Mayotte
-              'nl-aw', // Aruba
-              'nl-cw', // Curaçao
-              'nl-sx', // Sint Maarten
-              'no-21', // Svalbard
-              'no-22', // Jan Mayen
-              'us-as', // American Samoa
-              'us-gu', // Guam
-              'us-mp', // Northern Mariana Islands
-              'us-pr', // Puerto Rico
-              'us-vi', // U.S. Virgin Islands
-            ];
-            if (otherSubNationalities.includes(code.toLowerCase())) return false;
-            
-            return true;
-          })
-          .map(([code, name]) => ({
-            value: code.toUpperCase(),
-            label: String(name),
-            iconUrl: `https://flagcdn.com/${code.toLowerCase()}.svg`,
-          }));
+        const arr = Object.entries(data).map(([label, code]) => ({
+          value: String(code),
+          label: label.replace(/_/g, ' '),
+          iconUrl: `https://flagcdn.com/${codeToFlagCdn(String(code))}.svg`,
+        }));
         arr.sort((a, b) => a.label.localeCompare(b.label));
         setCountryList(arr);
         setLoading(false);
@@ -295,7 +255,6 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
         setLoading(false);
       }
     }
-
     fetchCountries();
     return () => { isMounted = false; };
   }, []);

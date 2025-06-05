@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import { codeToFlagCdn } from '@/utils/flagUtils';
 
 interface NationalityFlagProps {
   country?: string;
@@ -25,7 +26,7 @@ export default function NationalityFlag({ country }: NationalityFlagProps) {
     );
   }
 
-  const code = country.toLowerCase();
+  const code = codeToFlagCdn(country);
   return (
     <Image
       src={`https://flagcdn.com/${code}.svg`}
