@@ -169,7 +169,7 @@ export function Combobox({
               role="listbox"
             >
               {filtered.length === 0 ? (
-                <li className="px-4 py-2 text-gray-400" role="option">No results</li>
+                <li className="px-4 py-2 text-gray-400" role="option" aria-selected={false}>No results</li>
               ) : (
                 filtered.map((option, idx) => {
                   const isSelected = option.value === value
