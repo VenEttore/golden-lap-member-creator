@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { generateMemberStats } from '../../utils/memberStatGenerator';
 import type { MouseEvent } from 'react';
 import { codeToFlagCdn } from '@/utils/flagUtils';
+import { weightedCareerStage } from '@/utils/randomUtils';
 
 // Color palette and card styles from sample
 const cardBorder = '#AA8B83';
@@ -447,9 +448,8 @@ async function fetchRandomName(nat: string) {
   };
 }
 
-// Helper for weighted random selection
-type WeightedTable = Array<{ value: number, weight: number }>;
-function weightedRandom(table: WeightedTable): number {
+// Helper for weighted random selection (for trait count)
+function weightedRandom(table: { value: number, weight: number }[]): number {
   const total = table.reduce((sum, { weight }) => sum + weight, 0);
   let r = Math.random() * total;
   for (const { value, weight } of table) {
@@ -472,7 +472,7 @@ async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
   let allTraits: TraitType[] = [...typeTraits, ...genericTraits].filter(trait => !CAREER_STAGE_TRAITS.includes(trait.name));
 
   // Trait count probability tables
-  const traitCountTables: Record<string, WeightedTable> = {
+  const traitCountTables: Record<string, { value: number, weight: number }[]> = {
     crew_chief: [
       { value: 1, weight: 0.2222 },
       { value: 2, weight: 0.7040 },
@@ -775,11 +775,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
     if (type === 'driver') decadeStartContent = Math.random() < 0.1871;
     else if (type === 'engineer') decadeStartContent = Math.random() < 0.3333;
     else if (type === 'crew_chief') decadeStartContent = Math.random() < 0.3333;
-    // Filter career stages if decadeStartContent is false
-    const availableStages = decadeStartContent
-      ? CAREER_STAGES
-      : CAREER_STAGES.filter(cs => cs !== 'last_year');
-    const careerStage = availableStages[Math.floor(Math.random() * availableStages.length)];
+    const careerStage = weightedCareerStage(type);
     const traits: TraitType[] = await fetchRandomTraits(type);
     // Fetch random name from API
     let randomName = { name: '', surname: '' };
