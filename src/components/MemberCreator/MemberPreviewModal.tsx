@@ -6,6 +6,7 @@ import { TraitTooltip, useTraitTooltip } from '../Traits/TraitTooltip';
 import { getPortraits } from '@/utils/portraitStorage';
 import Image from 'next/image';
 import { codeToFlagCdn } from '@/utils/flagUtils';
+import JSZip from 'jszip';
 
 const cardBg = '#f7f5f2';
 const coral = '#fd655c';
@@ -79,15 +80,20 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
   }, [type]);
 
   // Download JSON handler
-  function handleDownload() {
-    // Format country code (2-letter, lowercase)
-    const countryCode = country.length === 2 ? country.toLowerCase() : country.toLowerCase();
-    // Use the portraitName if available, else fallback to name+surname
-    const portraitFile = portraitName && portraitName.trim()
-      ? portraitName.trim() + '.png'
-      : `${name}${surname}`.replace(/\s+/g, '') + '.png';
-    const portraitPath = `Textures/Portraits/${portraitFile}`;
-    // Map careerStage to the correct trait name
+  async function handleDownload() {
+    // Create a new ZIP file
+    const zip = new JSZip();
+    
+    // Create directory structure
+    const peopleFolder = zip.folder('Data/People');
+    const typeFolder = peopleFolder?.folder(
+      type === 'driver' ? 'Drivers' :
+      type === 'engineer' ? 'Engineers' :
+      'CrewChiefs'
+    );
+    const portraitsFolder = zip.folder('Textures/Portraits');
+
+    // Map career stage to the correct trait name
     const CAREER_STAGE_TRAIT_MAP: Record<string, string> = {
       early: 'EarlyCareer',
       mid: 'MidCareer',
@@ -97,48 +103,74 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
     const careerStageTrait = CAREER_STAGE_TRAIT_MAP[careerStage] || careerStage;
     // Traits: career stage trait + up to 5 others (no duplicates)
     const traitNames = [careerStageTrait, ...traits.map(t => t.name).filter(t => t !== careerStageTrait)].slice(0, 6);
-    // Common fields
-    const base = {
-      Name: name,
-      Surname: surname,
-      CountryCode: countryCode,
-      PortraitPath: portraitPath,
-      Traits: traitNames,
-      DecadeStartContent: !!decadeStartContent,
-    };
-    let member: Record<string, unknown> = {};
+
+    // Map portrait path
+    let portraitPath = '';
+    if (portraitName) {
+      portraitPath = `Textures/Portraits/${portraitName.replace(/\.png$/i, '')}.png`;
+    }
+
+    // Map stats by type
+    let exportStats: Record<string, number> = {};
     if (type === 'driver') {
-      member = {
-        ...base,
-        Speed: stats.speed || 0,
-        MaxSpeed: stats.maxSpeed || 0,
-        Focus: stats.focus || 0,
-        MaxFocus: stats.maxFocus || 0,
+      exportStats = {
+        Speed: stats.speed ?? 1,
+        MaxSpeed: stats.maxSpeed ?? 1,
+        Focus: stats.focus ?? 1,
+        MaxFocus: stats.maxFocus ?? 1,
       };
     } else if (type === 'engineer') {
-      member = {
-        ...base,
-        Expertise: stats.expertise || 0,
-        MaxExpertise: stats.maxExpertise || 0,
-        Precision: stats.precision || 0,
-        MaxPrecision: stats.maxPrecision || 0,
+      exportStats = {
+        Expertise: stats.expertise ?? 1,
+        MaxExpertise: stats.maxExpertise ?? 1,
+        Precision: stats.precision ?? 1,
+        MaxPrecision: stats.maxPrecision ?? 1,
       };
     } else if (type === 'crew_chief') {
-      member = {
-        ...base,
-        Speed: stats.speed || 0,
-        MaxSpeed: stats.maxSpeed || 0,
-        Skill: stats.skill || 0,
-        MaxSkill: stats.maxSkill || 0,
+      exportStats = {
+        Speed: stats.speed ?? 1,
+        MaxSpeed: stats.maxSpeed ?? 1,
+        Skill: stats.skill ?? 1,
+        MaxSkill: stats.maxSkill ?? 1,
       };
     }
-    // Use only name and surname for the file name (no member type)
-    const fileName = `${name} ${surname}.json`;
-    const blob = new Blob([JSON.stringify(member, null, 2)], { type: 'application/json' });
+
+    // Compose export object
+    const exportObj: Record<string, unknown> = {
+      Name: name,
+      Surname: surname,
+      CountryCode: country,
+      PortraitPath: portraitPath,
+      Traits: traitNames,
+      ...exportStats,
+      DecadeStartContent: !!decadeStartContent,
+    };
+
+    // Use docs-compliant filename: 'Name Surname.json' (trim, single space)
+    const filename = `${name}${surname ? ' ' + surname : ''}`.trim() + '.json';
+    
+    // Add JSON file to the appropriate folder
+    typeFolder?.file(filename, JSON.stringify(exportObj, null, 2));
+
+    // Add portrait if available
+    if (portraitName) {
+      const portraits = await getPortraits();
+      const portrait = portraits.find((p: { name: string }) => p.name === portraitName);
+      if (portrait && portrait.fullSizeImage) {
+        // Convert data URL to Blob
+        const res = await fetch(portrait.fullSizeImage);
+        const blob = await res.blob();
+        const portraitFileName = `${portraitName.replace(/\.png$/i, '')}.png`;
+        portraitsFolder?.file(portraitFileName, blob);
+      }
+    }
+
+    // Generate and download the ZIP file
+    const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = fileName;
+    a.download = `${name}${surname ? ' ' + surname : ''}`.trim() + '.zip';
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -332,7 +364,7 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
             onClick={onConfirm ? onConfirm : handleDownload}
             style={{ width: '100%', margin: '0 0 2px 0' }}
           >
-            {confirmText || `Confirm`}
+            {confirmText || 'Download'}
           </Button>
         </div>
       </DialogContent>
