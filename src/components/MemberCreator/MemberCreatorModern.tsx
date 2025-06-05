@@ -488,6 +488,18 @@ async function fetchRandomName(nat: string) {
   };
 }
 
+// Helper for weighted random selection
+type WeightedTable = Array<{ value: number, weight: number }>;
+function weightedRandom(table: WeightedTable): number {
+  const total = table.reduce((sum, { weight }) => sum + weight, 0);
+  let r = Math.random() * total;
+  for (const { value, weight } of table) {
+    if (r < weight) return value;
+    r -= weight;
+  }
+  return table[table.length - 1].value;
+}
+
 async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
   const traitFiles = {
     driver: '/data/traits/driver_traits.json',
@@ -500,7 +512,29 @@ async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
   const CAREER_STAGE_TRAITS = ['EarlyCareer', 'MidCareer', 'LateCareer', 'LastYear'];
   let allTraits: TraitType[] = [...typeTraits, ...genericTraits].filter(trait => !CAREER_STAGE_TRAITS.includes(trait.name));
 
-  // Special logic for drivers: Privateer and RichParents mutually exclusive, weighted
+  // Trait count probability tables
+  const traitCountTables: Record<string, WeightedTable> = {
+    crew_chief: [
+      { value: 1, weight: 0.2222 },
+      { value: 2, weight: 0.7040 },
+      { value: 3, weight: 0.0638 },
+    ],
+    driver: [
+      { value: 0, weight: 0.0072 },
+      { value: 1, weight: 0.0432 },
+      { value: 2, weight: 0.4016 },
+      { value: 3, weight: 0.3957 },
+      { value: 4, weight: 0.0863 },
+      { value: 5, weight: 0.0660 },
+    ],
+    engineer: [
+      { value: 1, weight: 0.2444 },
+      { value: 2, weight: 0.5822 },
+      { value: 3, weight: 0.1111 },
+      { value: 4, weight: 0.0622 },
+    ],
+  };
+
   if (type === 'driver') {
     const hasPrivateer = allTraits.find(t => t.name === 'Privateer');
     const hasRichParents = allTraits.find(t => t.name === 'RichParents');
@@ -512,34 +546,21 @@ async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
       if (Math.random() < 0.7) specialTrait = hasRichParents ?? null;
       else specialTrait = hasPrivateer ?? null;
     }
-    // Weighted trait count: 2 and 3 most common, 4 less, 1 less than 4, 0 rare, 5 rarest
-    const traitCountWeights = [
-      2, 2, 2, 2, 2, 2, 2, // 2 traits (weight 7)
-      3, 3, 3, 3, 3, 3, 3, // 3 traits (weight 7)
-      4, 4, 4, 4,          // 4 traits (weight 4)
-      1, 1, 1,             // 1 trait  (weight 3)
-      5, 5,                // 5 traits (weight 2)
-      0                    // 0 traits (weight 1)
-    ];
-    const count = traitCountWeights[Math.floor(Math.random() * traitCountWeights.length)];
+    const count = weightedRandom(traitCountTables.driver);
     const shuffled = [...allTraits].sort(() => 0.5 - Math.random());
     let traits = shuffled.slice(0, count);
     if (specialTrait) traits = [specialTrait, ...traits].slice(0, count); // Max 5 traits
     return traits;
-  } else {
-    // Weighted trait count: 2 and 3 most common, 4 less, 1 less than 4, 0 rare, 5 rarest
-    const traitCountWeights = [
-      2, 2, 2, 2, 2, 2, 2, // 2 traits (weight 7)
-      3, 3, 3, 3, 3, 3, 3, // 3 traits (weight 7)
-      4, 4, 4, 4,          // 4 traits (weight 4)
-      1, 1, 1,             // 1 trait  (weight 3)
-      5, 5,                // 5 traits (weight 2)
-      0                    // 0 traits (weight 1)
-    ];
-    const count = traitCountWeights[Math.floor(Math.random() * traitCountWeights.length)];
+  } else if (type === 'engineer') {
+    const count = weightedRandom(traitCountTables.engineer);
+    const shuffled = [...allTraits].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  } else if (type === 'crew_chief') {
+    const count = weightedRandom(traitCountTables.crew_chief);
     const shuffled = [...allTraits].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
   }
+  return [];
 }
 
 export default function MemberCreatorModern({ initialValues }: MemberCreatorModernProps = {}) {
