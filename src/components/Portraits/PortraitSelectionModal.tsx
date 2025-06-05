@@ -234,7 +234,9 @@ export default function PortraitSelectionModal({ isOpen, onClose, onSelect }: Po
       fullSizeImage,
       uploaded: true
     };
-    addOrUpdatePortrait(portrait);
+    await addOrUpdatePortrait(portrait);
+    const loaded = await getPortraits();
+    setPortraits(loaded);
     onSelect(portrait);
     setShowCropper(false);
     setCropperImage(null);
