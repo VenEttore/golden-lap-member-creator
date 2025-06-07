@@ -4,7 +4,7 @@ import { getMembers, deleteMember, Member, saveMembersToStorage } from '../utils
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getPortraits } from '../utils/portraitStorage';
-import { calculateMemberCost } from '../components/MemberCreator/MemberCreatorModern';
+import { calculateMemberCost } from '@/utils/costCalculator';
 import MemberTable from '../components/TeamMembers/MemberTable';
 import MemberHeader from '../components/TeamMembers/MemberHeader';
 import MemberModals from '../components/TeamMembers/MemberModals';

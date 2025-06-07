@@ -2,7 +2,7 @@ import React from 'react';
 import { Member } from '@/utils/memberStorage';
 import { Modpack } from '@/types/modpack';
 import MemberPreviewModal from '../MemberCreator/MemberPreviewModal';
-import { calculateMemberCost } from '../MemberCreator/MemberCreatorModern';
+import { calculateMemberCost } from '@/utils/costCalculator';
 
 interface MemberModalsProps {
   previewMember: Member | null;
