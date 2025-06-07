@@ -51,6 +51,7 @@ export default function MemberModals({
           cost={calculateMemberCost(previewMember.type, previewMember.stats, previewMember.traits)}
           type={previewMember.type}
           decadeStartContent={previewMember.decadeStartContent}
+          confirmText="Download"
         />
       )}
 

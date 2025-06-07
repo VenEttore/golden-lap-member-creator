@@ -774,6 +774,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
         type={type}
         decadeStartContent={decadeStartContent}
         onConfirm={handleConfirm}
+        confirmText="Confirm/Save"
       />
       <div
         style={{
