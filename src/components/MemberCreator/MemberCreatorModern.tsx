@@ -5,8 +5,6 @@ import PortraitSelectionModal from '../Portraits/PortraitSelectionModal';
 import { PortraitConfig } from '@/types/portrait';
 import { addOrUpdatePortrait, getPortraits } from '@/utils/portraitStorage';
 import { Combobox, ComboboxOption } from '../ui/combobox';
-import { Toggle } from '../ui/toggle';
-import { Select } from '../ui/select';
 import TraitsSection from '../Traits/TraitsSection';
 import MemberPreviewModal from './MemberPreviewModal';
 import { saveMember } from '@/utils/memberStorage';
@@ -15,8 +13,8 @@ import { toast } from "sonner";
 import { generateMemberStats } from '../../utils/memberStatGenerator';
 import { codeToFlagCdn } from '@/utils/flagUtils';
 import { weightedCareerStage } from '@/utils/randomUtils';
-import { Card } from '../ui/Card';
 import { StatsSection } from './StatsSection';
+import { InformationSection } from './InformationSection';
 
 // Cost calculation point values from docs
 const DRIVER_POINT_VALUES = [0, 1, 2, 3, 4, 5, 7, 10, 14, 18, 24];
@@ -722,99 +720,24 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
         <main className="flex-1 flex flex-col items-center w-full">
           <div className="w-full max-w-[1440px] flex flex-row gap-8 px-4 items-stretch h-full min-h-0">
             <div className="flex-1 min-w-0 flex flex-col">
-              <Card title="Information">
-                <div className="py-2 px-6 flex flex-col gap-3 h-full">
-                  {/* Member Type Selector */}
-                  <div className="flex justify-center mb-1 gap-2 items-center">
-                    <button
-                      type="button"
-                      aria-label="Randomize Member"
-                      onClick={handleRandomMember}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: '50%',
-                        background: '#fd655c',
-                        border: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 2px 8px rgba(214, 72, 67, 0.10)',
-                        cursor: 'pointer',
-                        marginRight: 12,
-                        transition: 'background 0.15s',
-                      }}
-                      onMouseOver={e => { e.currentTarget.style.background = '#b92d2a'; }}
-                      onMouseOut={e => { e.currentTarget.style.background = '#fd655c'; }}
-                      onFocus={e => { e.currentTarget.style.background = '#b92d2a'; }}
-                      onBlur={e => { e.currentTarget.style.background = '#fd655c'; }}
-                    >
-                      <Image src="/assets/dice.svg" alt="Randomize" width={24} height={24} style={{ display: 'block', filter: 'invert(1) brightness(2)' }} />
-                    </button>
-                    <div className="inline-flex rounded-md bg-[#f8f7f4] border border-[#E5E7EB] shadow-sm overflow-hidden">
-                      {memberTypes.map(mt => (
-                        <button
-                          key={mt.value}
-                          type="button"
-                          onClick={() => setType(mt.value as 'driver' | 'engineer' | 'crew_chief')}
-                          className={`px-6 py-2 font-semibold font-[Figtree,Inter,sans-serif] text-base transition-all focus:outline-none ${type === mt.value ? 'bg-[#fd655c] text-white' : 'bg-transparent text-[#b92d2a]'}`}
-                          style={{ borderRight: mt.value !== memberTypes[memberTypes.length-1].value ? '1px solid #E5E7EB' : undefined, cursor: type === mt.value ? 'default' : 'pointer' }}
-                        >
-                          {mt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex flex-col md:flex-row gap-8 items-center justify-center h-full">
-                    {/* Portrait and 1st Season toggle */}
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center border-2 border-[#AA8B83]" onClick={handlePortraitClick} style={{ cursor: 'pointer' }}>
-                        <PortraitSelector
-                          value={portrait}
-                          onChange={setPortrait}
-                          previewUrl={portraitPreviewUrl}
-                        />
-                      </div>
-                      <div className="flex flex-col items-center gap-1 mt-2">
-                        <span className="text-[15px] font-semibold text-gray-700 font-[Figtree,Inter,sans-serif]">1st Season:</span>
-                        <Toggle
-                          pressed={decadeStartContent}
-                          onClick={() => setDecadeStartContent(f => !f)}
-                          className="px-5 py-2 rounded-full border font-semibold font-[Figtree,Inter,sans-serif] text-base min-w-[120px] transition-all shadow-none cursor-pointer"
-                          style={{ minWidth: 120 }}
-                        >
-                          {decadeStartContent ? 'Available' : 'Unavailable'}
-                        </Toggle>
-                      </div>
-                    </div>
-                    {/* Fields */}
-                    <div className="flex-1 flex flex-col gap-4">
-                      <div className="flex gap-4">
-                        <div className="flex-1">
-                          <label className="block text-[1rem] font-bold text-gray-700 mb-1 font-[Figtree,Inter,sans-serif]">Name</label>
-                          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Enter name" className="w-full rounded-md border-2 border-[#E5E7EB] bg-white font-medium px-4 py-3 text-base shadow-sm font-[Figtree,Inter,sans-serif] text-[#333] focus:border-[#fd655c] focus:ring-2 focus:ring-coral-200 transition-colors" />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-[1rem] font-bold text-gray-700 mb-1 font-[Figtree,Inter,sans-serif]">Surname</label>
-                          <input type="text" value={surname} onChange={e => setSurname(e.target.value)} placeholder="Enter surname" className="w-full rounded-md border-2 border-[#E5E7EB] bg-white font-medium px-4 py-3 text-base shadow-sm font-[Figtree,Inter,sans-serif] text-[#333] focus:border-[#fd655c] focus:ring-2 focus:ring-coral-200 transition-colors" />
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="flex-1">
-                          <label className="block text-[1rem] font-bold text-gray-700 mb-1 font-[Figtree,Inter,sans-serif]">Nation of Origin</label>
-                          <NationalityCombobox value={country} onChange={setCountry} />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-[1rem] font-bold text-gray-700 mb-1 font-[Figtree,Inter,sans-serif]">Career Stage</label>
-                          <Select value={careerStage} onChange={e => setCareerStage(e.target.value)}>
-                            {careerStages.map(cs => <option key={cs.value} value={cs.value}>{cs.label}</option>)}
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              <InformationSection
+                memberTypes={memberTypes}
+                type={type}
+                onTypeChange={v => setType(v as 'driver' | 'engineer' | 'crew_chief')}
+                name={name}
+                onNameChange={setName}
+                surname={surname}
+                onSurnameChange={setSurname}
+                portrait={<PortraitSelector value={portrait} onChange={setPortrait} previewUrl={portraitPreviewUrl} />}
+                onPortraitClick={handlePortraitClick}
+                decadeStartContent={decadeStartContent}
+                onDecadeStartContentChange={setDecadeStartContent}
+                nationalityCombobox={<NationalityCombobox value={country} onChange={setCountry} />}
+                careerStage={careerStage}
+                onCareerStageChange={setCareerStage}
+                careerStages={careerStages}
+                onRandomize={handleRandomMember}
+              />
             </div>
             <div className="flex-shrink-0 w-auto flex flex-col">
               <StatsSection
