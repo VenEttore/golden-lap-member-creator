@@ -1,7 +1,7 @@
 import { Card } from '../ui/Card';
 import React from 'react';
 import Image from 'next/image';
-import { Toggle } from '../ui/toggle';
+import { ToggleButton } from './ToggleButton';
 import { Select } from '../ui/select';
 
 interface MemberTypeOption {
@@ -98,14 +98,7 @@ export function InformationSection({
             </div>
             <div className="flex flex-col items-center gap-1 mt-2">
               <span className="text-[15px] font-semibold text-gray-700 font-[Figtree,Inter,sans-serif]">1st Season:</span>
-              <Toggle
-                pressed={decadeStartContent}
-                onClick={() => onDecadeStartContentChange(!decadeStartContent)}
-                className="px-5 py-2 rounded-full border font-semibold font-[Figtree,Inter,sans-serif] text-base min-w-[120px] transition-all shadow-none cursor-pointer"
-                style={{ minWidth: 120 }}
-              >
-                {decadeStartContent ? 'Available' : 'Unavailable'}
-              </Toggle>
+              <ToggleButton value={decadeStartContent} onChange={onDecadeStartContentChange} onText="Available" offText="Unavailable" />
             </div>
           </div>
           {/* Fields */}
