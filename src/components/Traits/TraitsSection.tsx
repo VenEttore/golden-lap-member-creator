@@ -1,13 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useTraitTooltip, TraitTooltip } from './TraitTooltip';
-
-// Use the same card style as Information/Stats cards
-const cardBg = '#F5F5F2';
-const cardBorder = '#AA8B83';
-const cardShadow = 'rgba(52, 79, 58, 0.10)';
-const sectionHeaderBg = '#d0cdbe';
-const sectionHeaderBorder = '#d1cfc7';
+import { Card } from '../ui/Card';
+import { MemberType, Trait } from '@/types/member';
 
 const driversSheet = '/assets/drivers_sheet.png';
 const engcrewSheet = '/assets/engcrew_sheet.png';
@@ -22,7 +17,7 @@ interface IconData {
 // Reusable TraitIcon component
 function TraitIcon({ traitName, memberType, iconData, size = 24, className = '' }: {
   traitName: string;
-  memberType: 'driver' | 'engineer' | 'crew_chief';
+  memberType: MemberType;
   iconData: IconData;
   size?: number;
   className?: string;
@@ -53,40 +48,8 @@ function TraitIcon({ traitName, memberType, iconData, size = 24, className = '' 
   );
 }
 
-function SectionHeader({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        background: sectionHeaderBg,
-        borderTopLeftRadius: 14,
-        borderTopRightRadius: 14,
-        borderBottom: `2px solid ${sectionHeaderBorder}`,
-        marginTop: 0,
-        marginBottom: 0,
-        paddingTop: '0.75rem',
-        paddingBottom: '0.75rem',
-        paddingLeft: '1.5rem',
-        paddingRight: '1.5rem',
-        textAlign: 'center',
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'flex',
-      }}
-      className="font-bold text-[1.18rem] text-[#222] flex items-center gap-3 font-[Figtree,Inter,sans-serif] tracking-[0.01em] justify-center text-center"
-    >
-      {children}
-    </div>
-  );
-}
-
-interface Trait {
-  name: string;
-  description: string;
-  display_name: string;
-}
-
 interface TraitsSectionProps {
-  memberType: 'driver' | 'engineer' | 'crew_chief';
+  memberType: MemberType;
   selectedTraits: Trait[];
   onTraitsChange: (traits: Trait[]) => void;
   initialTraitNames?: string[];
@@ -239,193 +202,104 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
   };
 
   return (
-    <div
-      style={{
-        background: cardBg,
-        border: `2px solid ${cardBorder}`,
-        boxShadow: `0 4px 16px ${cardShadow}`,
-        borderRadius: 18,
-        paddingTop: 0,
-        width: '100%',
-        minWidth: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-      className="overflow-hidden flex flex-col min-h-[260px] p-0 gap-0 w-full"
-    >
-      <SectionHeader>Traits</SectionHeader>
-      <div className="py-8 px-8 flex-1 flex flex-col gap-4">
-        <div className="flex gap-4 h-[600px]">
-          {/* Available Traits */}
-          <div className="flex-[2_2_0%] flex flex-col">
-            <div className="mb-2">
-              <input
-                type="text"
-                placeholder="Search traits..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full text-base border rounded-lg px-4"
-                style={{
-                  height: 40,
-                  minHeight: 40,
-                  maxHeight: 40,
-                  borderRadius: 8,
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-            <div className="flex-1 overflow-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr
-                    style={{
-                      background: '#ece9e2',
-                      fontWeight: 700,
-                      fontSize: '1.05rem',
-                      color: '#333',
-                      borderBottom: '1.5px solid #e0ded9',
-                    }}
-                  >
-                    <th
-                      className="p-2 w-[220px] min-w-[180px] max-w-[300px] cursor-pointer select-none"
-                      style={{ userSelect: 'none', fontWeight: 700, color: '#333', padding: '0.5rem 1rem', background: 'none', border: 'none' }}
-                      onClick={() => setSortAsc((asc) => !asc)}
-                    >
-                      Trait
-                      <span style={{ marginLeft: 8, fontSize: '1.1em', color: '#b0926a', verticalAlign: 'middle' }}>
-                        {sortAsc ? '▲' : '▼'}
-                      </span>
-                    </th>
-                    <th className="p-2" style={{ fontWeight: 700, color: '#333', padding: '0.5rem 1rem', background: 'none', border: 'none' }}>Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedTraits.map((trait, idx) => (
-                    <tr
-                      key={trait.name}
-                      className={`border-b cursor-pointer ${
-                        selectedTraits.some(t => t.name === trait.name) ? 'bg-blue-50' : ''
-                      }`}
-                      style={{
-                        background: !selectedTraits.some(t => t.name === trait.name) && idx % 2 === 1 ? '#f0ede7' : undefined,
-                        cursor: 'pointer',
-                        transition: 'background 0.13s',
-                      }}
-                      onMouseOver={e => {
-                        if (!selectedTraits.some(t => t.name === trait.name)) {
-                          (e.currentTarget as HTMLTableRowElement).style.background = '#fbe7e6';
-                        }
-                      }}
-                      onMouseOut={e => {
-                        if (!selectedTraits.some(t => t.name === trait.name)) {
-                          (e.currentTarget as HTMLTableRowElement).style.background = idx % 2 === 1 ? '#f0ede7' : '';
-                        }
-                      }}
-                      onClick={() => handleTraitSelect(trait)}
-                    >
-                      <td className="p-2 w-[220px] min-w-[180px] max-w-[300px] whitespace-nowrap overflow-ellipsis overflow-hidden flex items-center">
-                        {renderTraitIcon(trait.name)}
-                        <span style={{ marginLeft: 8 }}>{trait.display_name}</span>
-                      </td>
-                      <td className="p-2">{trait.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+    <Card title="Traits">
+      <div className="flex gap-4 h-[400px]">
+        {/* Available Traits Table */}
+        <div className="flex-[2_2_0%] flex flex-col min-w-0">
+          <div className="mb-2 flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search traits..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full text-base border rounded-lg px-4"
+              style={{ height: 40, minHeight: 40, maxHeight: 40, borderRadius: 8, paddingTop: 0, paddingBottom: 0, boxSizing: 'border-box' }}
+            />
           </div>
-
-          {/* Selected Traits */}
-          <div className="flex-[1_1_0%] flex flex-col min-w-[180px] max-w-[320px]">
-            <div
-              className="mb-2 flex items-center gap-4 px-4 rounded-lg"
-              style={{
-                height: 40,
-                background: '#e0ded9',
-                minHeight: 40,
-                maxHeight: 40,
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                borderRadius: 8,
-              }}
-            >
-              <span
-                className="font-bold text-[#222]"
-                style={{ fontSize: '1.18rem', letterSpacing: '0.01em' }}
-              >
-                Selected
-              </span>
-              <SectorPips count={selectedTraits.length} />
-            </div>
-            <div className="flex-1 overflow-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
+          <div className="flex-1 overflow-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr style={{ background: '#ece9e2', fontWeight: 700, fontSize: '1.05rem', color: '#333', borderBottom: '1.5px solid #e0ded9' }}>
+                  <th className="p-2 w-[220px] min-w-[180px] max-w-[300px] cursor-pointer select-none" style={{ userSelect: 'none', fontWeight: 700, color: '#333', padding: '0.5rem 1rem', background: 'none', border: 'none' }} onClick={() => setSortAsc((asc) => !asc)}>
+                    Trait
+                    <span style={{ marginLeft: 8, fontSize: '1.1em', color: '#b0926a', verticalAlign: 'middle' }}>{sortAsc ? '▲' : '▼'}</span>
+                  </th>
+                  <th className="p-2" style={{ fontWeight: 700, color: '#333', padding: '0.5rem 1rem', background: 'none', border: 'none' }}>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedTraits.map((trait, idx) => (
                   <tr
-                    style={{
-                      background: '#ece9e2',
-                      fontWeight: 700,
-                      fontSize: '1.05rem',
-                      color: '#333',
-                      borderBottom: '1.5px solid #e0ded9',
-                    }}
+                    key={trait.name}
+                    className={`border-b cursor-pointer ${selectedTraits.some(t => t.name === trait.name) ? 'bg-blue-50' : ''}`}
+                    style={{ background: !selectedTraits.some(t => t.name === trait.name) && idx % 2 === 1 ? '#f0ede7' : undefined, cursor: 'pointer', transition: 'background 0.13s' }}
+                    onMouseOver={e => { if (!selectedTraits.some(t => t.name === trait.name)) { (e.currentTarget as HTMLTableRowElement).style.background = '#fbe7e6'; } }}
+                    onMouseOut={e => { if (!selectedTraits.some(t => t.name === trait.name)) { (e.currentTarget as HTMLTableRowElement).style.background = idx % 2 === 1 ? '#f0ede7' : ''; } }}
+                    onClick={() => handleTraitSelect(trait)}
+                    onMouseEnter={e => showTooltip(e, trait.display_name, trait.description)}
+                    onMouseMove={moveTooltip}
+                    onMouseLeave={hideTooltip}
                   >
-                    <th
-                      className="p-2 cursor-pointer select-none"
-                      style={{ userSelect: 'none', fontWeight: 700, color: '#333', padding: '0.5rem 1rem', background: 'none', border: 'none' }}
-                      onClick={() => setSelectedSortAsc((asc) => !asc)}
-                    >
-                      Selected Trait
-                      <span style={{ marginLeft: 8, fontSize: '1.1em', color: '#b0926a', verticalAlign: 'middle' }}>
-                        {selectedSortAsc ? '▲' : '▼'}
-                      </span>
-                    </th>
+                    <td className="p-2 w-[220px] min-w-[180px] max-w-[300px] whitespace-nowrap overflow-ellipsis overflow-hidden flex items-center">
+                      {renderTraitIcon(trait.name)}
+                      <span style={{ marginLeft: 8 }}>{trait.display_name}</span>
+                    </td>
+                    <td className="p-2">{trait.description}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {sortedSelectedTraits.map((trait, idx) => (
-                    <tr
-                      key={trait.name}
-                      className="border-b cursor-pointer"
-                      style={{
-                        background: idx % 2 === 1 ? '#f0ede7' : undefined,
-                        cursor: 'pointer',
-                        transition: 'background 0.13s',
-                      }}
-                      onMouseOver={e => {
-                        (e.currentTarget as HTMLTableRowElement).style.background = '#fbe7e6';
-                      }}
-                      onMouseOut={e => {
-                        (e.currentTarget as HTMLTableRowElement).style.background = idx % 2 === 1 ? '#f0ede7' : '';
-                      }}
-                      onClick={() => handleTraitSelect(trait)}
-                      onMouseEnter={e => showTooltip(e, trait.display_name, trait.description)}
-                      onMouseMove={moveTooltip}
-                      onMouseLeave={hideTooltip}
-                    >
-                      <td className="p-2 flex items-center">
-                        {renderTraitIcon(trait.name)}
-                        <span style={{ marginLeft: 8 }}>{trait.display_name}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {tooltip && (
-                <TraitTooltip
-                  title={tooltip.title}
-                  description={tooltip.description}
-                  x={tooltip.x}
-                  y={tooltip.y}
-                />
-              )}
-            </div>
+                ))}
+              </tbody>
+            </table>
+            {tooltip && (
+              <TraitTooltip
+                title={tooltip.title}
+                description={tooltip.description}
+                x={tooltip.x}
+                y={tooltip.y}
+              />
+            )}
+          </div>
+        </div>
+        {/* Selected Traits */}
+        <div className="flex-[1_1_0%] flex flex-col min-w-[180px] max-w-[320px]">
+          <div className="mb-2 flex items-center gap-4 px-4 rounded-lg" style={{ height: 40, background: '#e0ded9', minHeight: 40, maxHeight: 40, alignItems: 'center', justifyContent: 'flex-start', borderRadius: 8 }}>
+            <span className="font-bold text-[#222]" style={{ fontSize: '1.18rem', letterSpacing: '0.01em' }}>Selected</span>
+            <SectorPips count={selectedTraits.length} />
+          </div>
+          <div className="flex-1 overflow-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr style={{ background: '#ece9e2', fontWeight: 700, fontSize: '1.05rem', color: '#333', borderBottom: '1.5px solid #e0ded9' }}>
+                  <th className="p-2 cursor-pointer select-none" style={{ userSelect: 'none', fontWeight: 700, color: '#333', padding: '0.5rem 1rem', background: 'none', border: 'none' }} onClick={() => setSelectedSortAsc((asc) => !asc)}>
+                    Selected Trait
+                    <span style={{ marginLeft: 8, fontSize: '1.1em', color: '#b0926a', verticalAlign: 'middle' }}>{selectedSortAsc ? '▲' : '▼'}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedSelectedTraits.map((trait, idx) => (
+                  <tr
+                    key={trait.name}
+                    className="border-b cursor-pointer"
+                    style={{ background: idx % 2 === 1 ? '#f0ede7' : undefined, cursor: 'pointer', transition: 'background 0.13s' }}
+                    onMouseOver={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#fbe7e6'; }}
+                    onMouseOut={e => { (e.currentTarget as HTMLTableRowElement).style.background = idx % 2 === 1 ? '#f0ede7' : ''; }}
+                    onClick={() => handleTraitSelect(trait)}
+                    onMouseEnter={e => showTooltip(e, trait.display_name, trait.description)}
+                    onMouseMove={moveTooltip}
+                    onMouseLeave={hideTooltip}
+                  >
+                    <td className="p-2 flex items-center">
+                      {renderTraitIcon(trait.name)}
+                      <span style={{ marginLeft: 8 }}>{trait.display_name}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
