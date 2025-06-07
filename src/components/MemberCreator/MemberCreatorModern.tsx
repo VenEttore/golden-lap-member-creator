@@ -13,10 +13,10 @@ import { saveMember } from '@/utils/memberStorage';
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import { generateMemberStats } from '../../utils/memberStatGenerator';
-import type { MouseEvent } from 'react';
 import { codeToFlagCdn } from '@/utils/flagUtils';
 import { weightedCareerStage } from '@/utils/randomUtils';
 import { Card } from '../ui/Card';
+import { StatsSection } from './StatsSection';
 
 // Cost calculation point values from docs
 const DRIVER_POINT_VALUES = [0, 1, 2, 3, 4, 5, 7, 10, 14, 18, 24];
@@ -269,60 +269,6 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
   );
 }
 
-// Update StatsRow to accept onDotClick and highlight logic
-function StatsRow({ label, value, min, max, onDecrement, onIncrement, onDotClick }: { label: string; value: number; min: number; max: number; onDecrement: () => void; onIncrement: () => void; onDotClick: (v: number) => void }) {
-  return (
-    <div className="flex items-center gap-4 w-full py-2">
-      <span className="w-32 text-lg font-bold text-gray-700 whitespace-nowrap flex-shrink-0 text-left min-w-0 overflow-hidden font-[Figtree,Inter,sans-serif]">{label}</span>
-      <div className="flex items-center gap-2 flex-1 min-w-[180px] justify-center">
-        <button
-          type="button"
-          onClick={onDecrement}
-          disabled={value <= min}
-          className="stat-btn flex-shrink-0"
-          style={{
-            background: '#fd655c', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(214, 72, 67, 0.10)', padding: 0, outline: 'none', cursor: value <= min ? 'not-allowed' : 'pointer', opacity: value <= min ? 0.5 : 1, transition: 'background 0.15s, box-shadow 0.15s', fontSize: 22, fontFamily: 'Figtree,Inter,sans-serif', fontWeight: 700,
-          }}
-          tabIndex={value <= min ? -1 : 0}
-          onMouseOver={(e: MouseEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#b92d2a'; }}
-          onMouseOut={(e: MouseEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#fd655c'; }}
-          onFocus={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#b92d2a'; }}
-          onBlur={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#fd655c'; }}
-        >
-          <Image src="/assets/ChevronLeft.png" alt="<" width={18} height={18} style={{ filter: 'brightness(0) invert(1)' }} />
-        </button>
-        <div className="flex flex-row gap-[2px] items-center">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <span
-              key={i}
-              className={`stat-dot ${i < value ? 'filled' : i < max ? 'max' : 'disabled'}`}
-              style={{ width: 14, height: 14, borderRadius: '50%', display: 'inline-block', marginRight: i === 9 ? 0 : 2, background: i < value ? '#E9A727' : i < max ? '#fffbe6' : '#e0ded9', border: '1.5px solid ' + (i < value ? '#E9A727' : i < max ? '#E9A727' : '#d1cfc7'), boxShadow: i < value ? '0 2px 6px rgba(233, 167, 39, 0.13)' : i < max ? '0 1px 4px rgba(233, 167, 39, 0.10)' : '0 1px 2px rgba(52, 79, 58, 0.10)', opacity: i < value ? 1 : i < max ? 1 : 0.6, cursor: i < max ? 'pointer' : 'default', verticalAlign: 'middle' }}
-              onClick={() => i < max && onDotClick(i + 1)}
-            />
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={onIncrement}
-          disabled={value >= max}
-          className="stat-btn flex-shrink-0"
-          style={{
-            background: '#fd655c', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(214, 72, 67, 0.10)', padding: 0, outline: 'none', cursor: value >= max ? 'not-allowed' : 'pointer', opacity: value >= max ? 0.5 : 1, transition: 'background 0.15s, box-shadow 0.15s', fontSize: 22, fontFamily: 'Figtree,Inter,sans-serif', fontWeight: 700,
-          }}
-          tabIndex={value >= max ? -1 : 0}
-          onMouseOver={(e: MouseEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#b92d2a'; }}
-          onMouseOut={(e: MouseEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#fd655c'; }}
-          onFocus={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#b92d2a'; }}
-          onBlur={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#fd655c'; }}
-        >
-          <Image src="/assets/ChevronLeft.png" alt=">" width={18} height={18} style={{ filter: 'brightness(0) invert(1)', transform: 'rotate(180deg)' }} />
-        </button>
-      </div>
-      <span className="stat-value text-xl text-gray-700 text-right pl-4 flex-shrink-0 w-8 min-w-[2ch] font-[Figtree,Inter,sans-serif] tracking-wide" style={{ fontVariantNumeric: 'tabular-nums' }}>{value}</span>
-    </div>
-  );
-}
-
 interface TraitType {
   name: string;
   description: string;
@@ -569,22 +515,6 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
     if (key === 'maxPrecision') return 'precision';
     if (key === 'maxSkill') return 'skill';
     return '';
-  }
-  function setStatDirect(key: string, value: number) {
-    setStats(prev => {
-      const next = { ...prev, [key]: Math.max(1, value) };
-      // If base stat, auto-increase max if needed
-      const maxKey = getMaxKey(key);
-      if (maxKey && !key.startsWith('max') && value > (prev[maxKey] || 1)) {
-        next[maxKey] = value;
-      }
-      // If max stat, clamp to base
-      const baseKey = getBaseKey(key);
-      if (key.startsWith('max') && value < (prev[baseKey] || 1)) {
-        next[key] = prev[baseKey] || 1;
-      }
-      return next;
-    });
   }
 
   // Handle portrait selection
@@ -887,27 +817,16 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
               </Card>
             </div>
             <div className="flex-shrink-0 w-auto flex flex-col">
-              <Card title="Stats">
-                <div className="flex flex-col gap-2">
-                  {statFields[type as keyof typeof statFields].map(sf => {
-                    const isMax = sf.key.startsWith('max');
-                    const baseKey = getBaseKey(sf.key);
-                    const baseVal = stats[baseKey] || 1;
-                    return (
-                      <StatsRow
-                        key={sf.key}
-                        label={sf.label}
-                        value={stats[sf.key] || 1}
-                        min={isMax ? baseVal : 1}
-                        max={10}
-                        onDecrement={() => handleStatChange(sf.key, -1)}
-                        onIncrement={() => handleStatChange(sf.key, 1)}
-                        onDotClick={v => setStatDirect(sf.key, v)}
-                      />
-                    );
-                  })}
-                </div>
-              </Card>
+              <StatsSection
+                stats={stats}
+                statDefs={statFields[type as keyof typeof statFields].map(sf => ({
+                  key: sf.key,
+                  label: sf.label,
+                  min: sf.key.startsWith('max') ? (stats[getBaseKey(sf.key)] || 1) : 1,
+                  max: 10,
+                }))}
+                onStatChange={handleStatChange}
+              />
             </div>
           </div>
           <div className="w-full max-w-[1440px] grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 px-4 pb-32">
