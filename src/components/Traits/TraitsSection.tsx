@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useTraitTooltip, TraitTooltip } from './TraitTooltip';
 import { Card } from '../ui/Card';
 import { MemberType, Trait } from '@/types/member';
+import { filterTraits } from '@/utils/traitUtils';
 
 const driversSheet = '/assets/drivers_sheet.png';
 const engcrewSheet = '/assets/engcrew_sheet.png';
@@ -156,11 +157,7 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
     hideTooltip();
   }, [selectedTraits, hideTooltip]);
 
-  const filteredTraits = availableTraits.filter(trait =>
-    (trait.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     trait.description.toLowerCase().includes(searchQuery.toLowerCase())) &&
-    !selectedTraits.some(t => t.name === trait.name)
-  );
+  const filteredTraits = filterTraits(availableTraits, searchQuery, selectedTraits);
 
   // Sort filteredTraits by display_name
   const sortedTraits = [...filteredTraits].sort((a, b) =>
