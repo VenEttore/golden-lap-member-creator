@@ -16,13 +16,7 @@ import { generateMemberStats } from '../../utils/memberStatGenerator';
 import type { MouseEvent } from 'react';
 import { codeToFlagCdn } from '@/utils/flagUtils';
 import { weightedCareerStage } from '@/utils/randomUtils';
-
-// Color palette and card styles from sample
-const cardBorder = '#AA8B83';
-const cardShadow = 'rgba(52, 79, 58, 0.10)';
-const sectionHeaderBg = '#d0cdbe';
-const sectionHeaderBorder = '#d1cfc7';
-const cardBg = '#F5F5F2';
+import { Card } from '../ui/Card';
 
 // Cost calculation point values from docs
 const DRIVER_POINT_VALUES = [0, 1, 2, 3, 4, 5, 7, 10, 14, 18, 24];
@@ -59,50 +53,6 @@ export function calculateMemberCost(type: 'driver' | 'engineer' | 'crew_chief', 
     return Math.ceil((pv[skill] + pv[speed] + (maxSkill + maxSpeed) / 2) / 3);
   }
   return 0;
-}
-
-function SectionHeader({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        background: sectionHeaderBg,
-        borderTopLeftRadius: 14,
-        borderTopRightRadius: 14,
-        borderBottom: `2px solid ${sectionHeaderBorder}`,
-        marginTop: 0,
-        marginBottom: 0,
-        paddingTop: '0.75rem',
-        paddingBottom: '0.75rem',
-        paddingLeft: '1.5rem',
-        paddingRight: '1.5rem',
-        textAlign: 'center',
-        justifyContent: 'center',
-        alignItems: 'center',
-        display: 'flex',
-      }}
-      className="font-bold text-[1.18rem] text-[#222] flex items-center gap-3 font-[Figtree,Inter,sans-serif] tracking-[0.01em] justify-center text-center"
-    >
-      {children}
-    </div>
-  );
-}
-
-function Card({ children, title }: { children: React.ReactNode; title: string }) {
-  return (
-    <div
-      style={{
-        background: cardBg,
-        border: `2px solid ${cardBorder}`,
-        boxShadow: `0 4px 16px ${cardShadow}`,
-        borderRadius: 18,
-        paddingTop: 0,
-      }}
-      className="overflow-hidden flex flex-col min-h-[260px] p-0 gap-0"
-    >
-      <SectionHeader>{title}</SectionHeader>
-      <div className="py-8 px-8 flex-1 flex flex-col gap-4">{children}</div>
-    </div>
-  );
 }
 
 const memberTypes = [
@@ -824,6 +774,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
         type={type}
         decadeStartContent={decadeStartContent}
         onConfirm={handleConfirm}
+        confirmText="Confirm/Save"
       />
       <div
         style={{
