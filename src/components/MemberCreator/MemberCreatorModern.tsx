@@ -5,171 +5,24 @@ import PortraitSelectionModal from '../Portraits/PortraitSelectionModal';
 import { PortraitConfig } from '@/types/portrait';
 import { addOrUpdatePortrait, getPortraits } from '@/utils/portraitStorage';
 import { Combobox, ComboboxOption } from '../ui/combobox';
-import { Toggle } from '../ui/toggle';
-import { Select } from '../ui/select';
 import TraitsSection from '../Traits/TraitsSection';
 import MemberPreviewModal from './MemberPreviewModal';
 import { saveMember } from '@/utils/memberStorage';
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import { generateMemberStats } from '../../utils/memberStatGenerator';
-import type { MouseEvent } from 'react';
 import { codeToFlagCdn } from '@/utils/flagUtils';
 import { weightedCareerStage } from '@/utils/randomUtils';
-import { Card } from '../ui/Card';
-
-// Cost calculation point values from docs
-const DRIVER_POINT_VALUES = [0, 1, 2, 3, 4, 5, 7, 10, 14, 18, 24];
-const ENG_CREW_POINT_VALUES = [0, 1, 2, 3, 4, 6, 9, 13, 18, 24, 31];
-
-export function calculateMemberCost(type: 'driver' | 'engineer' | 'crew_chief', stats: Record<string, number>, selectedTraits: { name: string }[]) {
-  // Trait modifiers
-  const hasRichParents = selectedTraits.some(t => t.name === 'RichParents');
-  const hasPrivateer = selectedTraits.some(t => t.name === 'Privateer');
-  if (hasRichParents && type === 'driver') return 0;
-
-  if (type === 'driver') {
-    const speed = stats.speed || 0;
-    const focus = stats.focus || 0;
-    const maxSpeed = stats.maxSpeed || 0;
-    const maxFocus = stats.maxFocus || 0;
-    const pv = DRIVER_POINT_VALUES;
-    let cost = Math.ceil(pv[speed] + pv[focus] + (maxSpeed + maxFocus) / 2);
-    if (hasPrivateer) cost = Math.max(0, cost - 5);
-    return cost;
-  } else if (type === 'engineer') {
-    const expertise = stats.expertise || 0;
-    const precision = stats.precision || 0;
-    const maxExpertise = stats.maxExpertise || 0;
-    const maxPrecision = stats.maxPrecision || 0;
-    const pv = ENG_CREW_POINT_VALUES;
-    return Math.ceil((pv[expertise] + pv[precision] + (maxExpertise + maxPrecision) / 2) / 2.5);
-  } else if (type === 'crew_chief') {
-    const speed = stats.speed || 0;
-    const skill = stats.skill || 0;
-    const maxSpeed = stats.maxSpeed || 0;
-    const maxSkill = stats.maxSkill || 0;
-    const pv = ENG_CREW_POINT_VALUES;
-    return Math.ceil((pv[skill] + pv[speed] + (maxSkill + maxSpeed) / 2) / 3);
-  }
-  return 0;
-}
+import { StatsSection } from './StatsSection';
+import { InformationSection } from './InformationSection';
+import { calculateMemberCost } from '@/utils/costCalculator';
+import { PortraitSelector } from './PortraitSelector';
 
 const memberTypes = [
   { value: 'driver', label: 'Driver' },
   { value: 'engineer', label: 'Engineer' },
   { value: 'crew_chief', label: 'Crew Chief' },
 ];
-
-// Improved PortraitSelector component (legacy-inspired)
-function PortraitSelector({ value, onChange, previewUrl }: { value: string; onChange: (val: string) => void; previewUrl?: string | null }) {
-  const [portraitUrl, setPortraitUrl] = useState<string | null>(previewUrl || null);
-  const hasPortrait = Boolean(value);
-
-  useEffect(() => {
-    if (previewUrl) {
-      setPortraitUrl(previewUrl);
-      return;
-    }
-    if (value) {
-      let cancelled = false;
-      (async () => {
-        const portraits = await getPortraits();
-        if (cancelled) return;
-        const found = portraits.find((p: PortraitConfig) => p.name === value);
-        setPortraitUrl(found ? (found.fullSizeImage || found.thumbnail) : null);
-      })();
-      return () => { cancelled = true; };
-    } else {
-      setPortraitUrl(null);
-    }
-  }, [value, previewUrl]);
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 140 }}>
-      <div
-        style={{
-          position: 'relative',
-          width: 128,
-          height: 128,
-          borderRadius: '50%',
-          background: hasPortrait ? '#e5e5e5' : '#d1cfc7',
-          overflow: 'hidden',
-          boxShadow: '0 2px 8px rgba(52,79,58,0.10)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'box-shadow 0.15s',
-        }}
-        tabIndex={0}
-        onClick={() => onChange('')}
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onChange(''); }}
-        aria-label="Change Portrait"
-      >
-        {/* Portrait image or placeholder */}
-        {hasPortrait && portraitUrl ? (
-          <Image
-            src={portraitUrl || ''}
-            alt={value}
-            width={128}
-            height={128}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              borderRadius: '50%',
-            }}
-          />
-        ) : (
-          <div style={{ width: 128, height: 128, borderRadius: '50%', background: '#d1cfc7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56, color: '#aaa', fontWeight: 700, fontFamily: 'Figtree, Inter, sans-serif' }}>?</div>
-        )}
-        {/* Overlay on hover */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            borderRadius: '50%',
-            background: 'rgba(52,52,52,0.32)',
-            color: '#fff',
-            fontFamily: 'Figtree, Inter, sans-serif',
-            fontWeight: 700,
-            fontSize: 18,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: 0,
-            pointerEvents: 'none',
-            transition: 'opacity 0.15s',
-          }}
-          className="portrait-hover-overlay"
-        >
-          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 2 }}>
-              <circle cx="12" cy="13" r="3" />
-              <path d="M5 7h2l2-3h6l2 3h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" />
-            </svg>
-            {hasPortrait ? 'Change Portrait' : 'Add Portrait'}
-          </span>
-        </div>
-        <style>{`
-          .portrait-hover-overlay {
-            pointer-events: none;
-          }
-          div[aria-label="Change Portrait"]:hover .portrait-hover-overlay,
-          div[aria-label="Change Portrait"]:focus .portrait-hover-overlay {
-            opacity: 1;
-            pointer-events: auto;
-          }
-        `}</style>
-      </div>
-    </div>
-  );
-}
 
 const careerStages = [
   { value: '', label: 'Select career stage' },
@@ -266,60 +119,6 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
       ariaLabel="Nationality"
       ariaDescription="Select a nationality from the list"
     />
-  );
-}
-
-// Update StatsRow to accept onDotClick and highlight logic
-function StatsRow({ label, value, min, max, onDecrement, onIncrement, onDotClick }: { label: string; value: number; min: number; max: number; onDecrement: () => void; onIncrement: () => void; onDotClick: (v: number) => void }) {
-  return (
-    <div className="flex items-center gap-4 w-full py-2">
-      <span className="w-32 text-lg font-bold text-gray-700 whitespace-nowrap flex-shrink-0 text-left min-w-0 overflow-hidden font-[Figtree,Inter,sans-serif]">{label}</span>
-      <div className="flex items-center gap-2 flex-1 min-w-[180px] justify-center">
-        <button
-          type="button"
-          onClick={onDecrement}
-          disabled={value <= min}
-          className="stat-btn flex-shrink-0"
-          style={{
-            background: '#fd655c', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(214, 72, 67, 0.10)', padding: 0, outline: 'none', cursor: value <= min ? 'not-allowed' : 'pointer', opacity: value <= min ? 0.5 : 1, transition: 'background 0.15s, box-shadow 0.15s', fontSize: 22, fontFamily: 'Figtree,Inter,sans-serif', fontWeight: 700,
-          }}
-          tabIndex={value <= min ? -1 : 0}
-          onMouseOver={(e: MouseEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#b92d2a'; }}
-          onMouseOut={(e: MouseEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#fd655c'; }}
-          onFocus={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#b92d2a'; }}
-          onBlur={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value <= min)) e.currentTarget.style.background = '#fd655c'; }}
-        >
-          <Image src="/assets/ChevronLeft.png" alt="<" width={18} height={18} style={{ filter: 'brightness(0) invert(1)' }} />
-        </button>
-        <div className="flex flex-row gap-[2px] items-center">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <span
-              key={i}
-              className={`stat-dot ${i < value ? 'filled' : i < max ? 'max' : 'disabled'}`}
-              style={{ width: 14, height: 14, borderRadius: '50%', display: 'inline-block', marginRight: i === 9 ? 0 : 2, background: i < value ? '#E9A727' : i < max ? '#fffbe6' : '#e0ded9', border: '1.5px solid ' + (i < value ? '#E9A727' : i < max ? '#E9A727' : '#d1cfc7'), boxShadow: i < value ? '0 2px 6px rgba(233, 167, 39, 0.13)' : i < max ? '0 1px 4px rgba(233, 167, 39, 0.10)' : '0 1px 2px rgba(52, 79, 58, 0.10)', opacity: i < value ? 1 : i < max ? 1 : 0.6, cursor: i < max ? 'pointer' : 'default', verticalAlign: 'middle' }}
-              onClick={() => i < max && onDotClick(i + 1)}
-            />
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={onIncrement}
-          disabled={value >= max}
-          className="stat-btn flex-shrink-0"
-          style={{
-            background: '#fd655c', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(214, 72, 67, 0.10)', padding: 0, outline: 'none', cursor: value >= max ? 'not-allowed' : 'pointer', opacity: value >= max ? 0.5 : 1, transition: 'background 0.15s, box-shadow 0.15s', fontSize: 22, fontFamily: 'Figtree,Inter,sans-serif', fontWeight: 700,
-          }}
-          tabIndex={value >= max ? -1 : 0}
-          onMouseOver={(e: MouseEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#b92d2a'; }}
-          onMouseOut={(e: MouseEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#fd655c'; }}
-          onFocus={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#b92d2a'; }}
-          onBlur={(e: React.FocusEvent<HTMLButtonElement>) => { if (!(value >= max)) e.currentTarget.style.background = '#fd655c'; }}
-        >
-          <Image src="/assets/ChevronLeft.png" alt=">" width={18} height={18} style={{ filter: 'brightness(0) invert(1)', transform: 'rotate(180deg)' }} />
-        </button>
-      </div>
-      <span className="stat-value text-xl text-gray-700 text-right pl-4 flex-shrink-0 w-8 min-w-[2ch] font-[Figtree,Inter,sans-serif] tracking-wide" style={{ fontVariantNumeric: 'tabular-nums' }}>{value}</span>
-    </div>
   );
 }
 
@@ -570,22 +369,6 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
     if (key === 'maxSkill') return 'skill';
     return '';
   }
-  function setStatDirect(key: string, value: number) {
-    setStats(prev => {
-      const next = { ...prev, [key]: Math.max(1, value) };
-      // If base stat, auto-increase max if needed
-      const maxKey = getMaxKey(key);
-      if (maxKey && !key.startsWith('max') && value > (prev[maxKey] || 1)) {
-        next[maxKey] = value;
-      }
-      // If max stat, clamp to base
-      const baseKey = getBaseKey(key);
-      if (key.startsWith('max') && value < (prev[baseKey] || 1)) {
-        next[key] = prev[baseKey] || 1;
-      }
-      return next;
-    });
-  }
 
   // Handle portrait selection
   function handlePortraitClick() {
@@ -792,122 +575,36 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
         <main className="flex-1 flex flex-col items-center w-full">
           <div className="w-full max-w-[1440px] flex flex-row gap-8 px-4 items-stretch h-full min-h-0">
             <div className="flex-1 min-w-0 flex flex-col">
-              <Card title="Information">
-                <div className="py-2 px-6 flex flex-col gap-3 h-full">
-                  {/* Member Type Selector */}
-                  <div className="flex justify-center mb-1 gap-2 items-center">
-                    <button
-                      type="button"
-                      aria-label="Randomize Member"
-                      onClick={handleRandomMember}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: '50%',
-                        background: '#fd655c',
-                        border: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 2px 8px rgba(214, 72, 67, 0.10)',
-                        cursor: 'pointer',
-                        marginRight: 12,
-                        transition: 'background 0.15s',
-                      }}
-                      onMouseOver={e => { e.currentTarget.style.background = '#b92d2a'; }}
-                      onMouseOut={e => { e.currentTarget.style.background = '#fd655c'; }}
-                      onFocus={e => { e.currentTarget.style.background = '#b92d2a'; }}
-                      onBlur={e => { e.currentTarget.style.background = '#fd655c'; }}
-                    >
-                      <Image src="/assets/dice.svg" alt="Randomize" width={24} height={24} style={{ display: 'block', filter: 'invert(1) brightness(2)' }} />
-                    </button>
-                    <div className="inline-flex rounded-md bg-[#f8f7f4] border border-[#E5E7EB] shadow-sm overflow-hidden">
-                      {memberTypes.map(mt => (
-                        <button
-                          key={mt.value}
-                          type="button"
-                          onClick={() => setType(mt.value as 'driver' | 'engineer' | 'crew_chief')}
-                          className={`px-6 py-2 font-semibold font-[Figtree,Inter,sans-serif] text-base transition-all focus:outline-none ${type === mt.value ? 'bg-[#fd655c] text-white' : 'bg-transparent text-[#b92d2a]'}`}
-                          style={{ borderRight: mt.value !== memberTypes[memberTypes.length-1].value ? '1px solid #E5E7EB' : undefined, cursor: type === mt.value ? 'default' : 'pointer' }}
-                        >
-                          {mt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex flex-col md:flex-row gap-8 items-center justify-center h-full">
-                    {/* Portrait and 1st Season toggle */}
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center border-2 border-[#AA8B83]" onClick={handlePortraitClick} style={{ cursor: 'pointer' }}>
-                        <PortraitSelector
-                          value={portrait}
-                          onChange={setPortrait}
-                          previewUrl={portraitPreviewUrl}
-                        />
-                      </div>
-                      <div className="flex flex-col items-center gap-1 mt-2">
-                        <span className="text-[15px] font-semibold text-gray-700 font-[Figtree,Inter,sans-serif]">1st Season:</span>
-                        <Toggle
-                          pressed={decadeStartContent}
-                          onClick={() => setDecadeStartContent(f => !f)}
-                          className="px-5 py-2 rounded-full border font-semibold font-[Figtree,Inter,sans-serif] text-base min-w-[120px] transition-all shadow-none cursor-pointer"
-                          style={{ minWidth: 120 }}
-                        >
-                          {decadeStartContent ? 'Available' : 'Unavailable'}
-                        </Toggle>
-                      </div>
-                    </div>
-                    {/* Fields */}
-                    <div className="flex-1 flex flex-col gap-4">
-                      <div className="flex gap-4">
-                        <div className="flex-1">
-                          <label className="block text-[1rem] font-bold text-gray-700 mb-1 font-[Figtree,Inter,sans-serif]">Name</label>
-                          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Enter name" className="w-full rounded-md border-2 border-[#E5E7EB] bg-white font-medium px-4 py-3 text-base shadow-sm font-[Figtree,Inter,sans-serif] text-[#333] focus:border-[#fd655c] focus:ring-2 focus:ring-coral-200 transition-colors" />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-[1rem] font-bold text-gray-700 mb-1 font-[Figtree,Inter,sans-serif]">Surname</label>
-                          <input type="text" value={surname} onChange={e => setSurname(e.target.value)} placeholder="Enter surname" className="w-full rounded-md border-2 border-[#E5E7EB] bg-white font-medium px-4 py-3 text-base shadow-sm font-[Figtree,Inter,sans-serif] text-[#333] focus:border-[#fd655c] focus:ring-2 focus:ring-coral-200 transition-colors" />
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="flex-1">
-                          <label className="block text-[1rem] font-bold text-gray-700 mb-1 font-[Figtree,Inter,sans-serif]">Nation of Origin</label>
-                          <NationalityCombobox value={country} onChange={setCountry} />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-[1rem] font-bold text-gray-700 mb-1 font-[Figtree,Inter,sans-serif]">Career Stage</label>
-                          <Select value={careerStage} onChange={e => setCareerStage(e.target.value)}>
-                            {careerStages.map(cs => <option key={cs.value} value={cs.value}>{cs.label}</option>)}
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              <InformationSection
+                memberTypes={memberTypes}
+                type={type}
+                onTypeChange={v => setType(v as 'driver' | 'engineer' | 'crew_chief')}
+                name={name}
+                onNameChange={setName}
+                surname={surname}
+                onSurnameChange={setSurname}
+                portrait={<PortraitSelector value={portrait} onChange={setPortrait} previewUrl={portraitPreviewUrl} />}
+                onPortraitClick={handlePortraitClick}
+                decadeStartContent={decadeStartContent}
+                onDecadeStartContentChange={setDecadeStartContent}
+                nationalityCombobox={<NationalityCombobox value={country} onChange={setCountry} />}
+                careerStage={careerStage}
+                onCareerStageChange={setCareerStage}
+                careerStages={careerStages}
+                onRandomize={handleRandomMember}
+              />
             </div>
             <div className="flex-shrink-0 w-auto flex flex-col">
-              <Card title="Stats">
-                <div className="flex flex-col gap-2">
-                  {statFields[type as keyof typeof statFields].map(sf => {
-                    const isMax = sf.key.startsWith('max');
-                    const baseKey = getBaseKey(sf.key);
-                    const baseVal = stats[baseKey] || 1;
-                    return (
-                      <StatsRow
-                        key={sf.key}
-                        label={sf.label}
-                        value={stats[sf.key] || 1}
-                        min={isMax ? baseVal : 1}
-                        max={10}
-                        onDecrement={() => handleStatChange(sf.key, -1)}
-                        onIncrement={() => handleStatChange(sf.key, 1)}
-                        onDotClick={v => setStatDirect(sf.key, v)}
-                      />
-                    );
-                  })}
-                </div>
-              </Card>
+              <StatsSection
+                stats={stats}
+                statDefs={statFields[type as keyof typeof statFields].map(sf => ({
+                  key: sf.key,
+                  label: sf.label,
+                  min: sf.key.startsWith('max') ? (stats[getBaseKey(sf.key)] || 1) : 1,
+                  max: 10,
+                }))}
+                onStatChange={handleStatChange}
+              />
             </div>
           </div>
           <div className="w-full max-w-[1440px] grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 px-4 pb-32">

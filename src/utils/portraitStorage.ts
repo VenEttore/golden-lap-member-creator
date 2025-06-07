@@ -38,8 +38,7 @@ export async function addOrUpdatePortrait(portrait: PortraitConfig): Promise<voi
 
 // Delete a portrait by name
 export async function deletePortrait(name: string): Promise<void> {
-  const portraits = (await getPortraits()).filter(p => p.name !== name);
-  await savePortraits(portraits);
+  await db.portraits.delete(name);
 }
 
 // Delete all portraits

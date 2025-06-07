@@ -5,7 +5,7 @@ import { faPen, faTrash, faDownload, faEye } from '@fortawesome/free-solid-svg-i
 import PortraitThumbnailForMember from './PortraitThumbnailForMember';
 import NationalityFlag from './NationalityFlag';
 import TraitIconsCell from './TraitIconsCell';
-import { calculateMemberCost } from '../MemberCreator/MemberCreatorModern';
+import { calculateMemberCost } from '@/utils/costCalculator';
 
 interface IconData {
   [key: string]: {
