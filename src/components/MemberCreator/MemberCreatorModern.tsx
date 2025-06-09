@@ -126,6 +126,7 @@ interface TraitType {
   name: string;
   description: string;
   display_name: string;
+  category: string;
 }
 
 // Reusable Button component (legacy/portrait style)
@@ -243,6 +244,25 @@ async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
     ],
   };
 
+  // Helper function to select traits respecting category restrictions
+  function selectTraitsWithCategoryRestrictions(traits: TraitType[], count: number, initialTraits: TraitType[] = []): TraitType[] {
+    const selectedTraits = [...initialTraits];
+    const usedCategories = new Set(initialTraits.map(t => t.category).filter(Boolean));
+    const shuffled = [...traits].sort(() => 0.5 - Math.random());
+    
+    for (const trait of shuffled) {
+      if (selectedTraits.length >= count) break;
+      
+      // Skip if trait has a category that's already used
+      if (trait.category && usedCategories.has(trait.category)) continue;
+      
+      selectedTraits.push(trait);
+      if (trait.category) usedCategories.add(trait.category);
+    }
+    
+    return selectedTraits;
+  }
+
   if (type === 'driver') {
     const hasPrivateer = allTraits.find(t => t.name === 'Privateer');
     const hasRichParents = allTraits.find(t => t.name === 'RichParents');
@@ -255,20 +275,11 @@ async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
       else specialTrait = hasPrivateer ?? null;
     }
     const count = weightedRandom(traitCountTables.driver);
-    const shuffled = [...allTraits].sort(() => 0.5 - Math.random());
-    let traits = shuffled.slice(0, count);
-    if (specialTrait) traits = [specialTrait, ...traits].slice(0, count); // Max 5 traits
-    return traits;
-  } else if (type === 'engineer') {
-    const count = weightedRandom(traitCountTables.engineer);
-    const shuffled = [...allTraits].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
-  } else if (type === 'crew_chief') {
-    const count = weightedRandom(traitCountTables.crew_chief);
-    const shuffled = [...allTraits].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
+    return selectTraitsWithCategoryRestrictions(allTraits, count, specialTrait ? [specialTrait] : []);
+  } else {
+    const count = weightedRandom(traitCountTables[type]);
+    return selectTraitsWithCategoryRestrictions(allTraits, count);
   }
-  return [];
 }
 
 export default function MemberCreatorModern({ initialValues }: MemberCreatorModernProps = {}) {

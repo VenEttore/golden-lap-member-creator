@@ -32,9 +32,20 @@ function MembersPageInner() {
       if (searchParams.has('traits')) {
         const traitsRaw = searchParams.get('traits') || '';
         try {
-          vals.traits = JSON.parse(traitsRaw);
+          const parsed = JSON.parse(traitsRaw);
+          // Ensure category field exists
+          if (Array.isArray(parsed)) {
+            vals.traits = parsed.map((trait: Partial<Member["traits"][number]>) => ({
+              name: typeof trait.name === 'string' ? trait.name : '',
+              display_name: typeof trait.display_name === 'string' ? trait.display_name : '',
+              description: typeof trait.description === 'string' ? trait.description : '',
+              category: typeof trait.category === 'string' ? trait.category : ''
+            }));
+          } else {
+            vals.traits = parsed;
+          }
         } catch {
-          vals.traits = traitsRaw.split(',').map((s: string) => s.trim()).filter(Boolean).map((name: string) => ({ name, display_name: name, description: '' }));
+          vals.traits = traitsRaw.split(',').map((s: string) => s.trim()).filter(Boolean).map((name: string) => ({ name, display_name: name, description: '', category: '' }));
         }
       }
       if (searchParams.has('stats')) {

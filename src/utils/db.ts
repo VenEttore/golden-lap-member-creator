@@ -7,7 +7,7 @@ export interface Member {
   country: string;
   careerStage: string;
   portraitName?: string;
-  traits: { name: string; display_name: string; description: string }[];
+  traits: { name: string; display_name: string; description: string; category: string; }[];
   stats: Record<string, number>;
   cost: number;
   type: 'driver' | 'engineer' | 'crew_chief';

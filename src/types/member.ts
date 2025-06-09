@@ -4,6 +4,7 @@ export interface Trait {
   name: string;
   description: string;
   display_name: string;
+  category: string;
 }
 
 export interface MemberStats {
