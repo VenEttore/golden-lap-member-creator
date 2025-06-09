@@ -173,15 +173,28 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
       : b.display_name.localeCompare(a.display_name)
   );
 
+  const canSelectTrait = (trait: Trait) => {
+    // If trait has no category (empty string), it can always be selected
+    if (!trait.category) return true;
+    
+    // Check if we already have a trait with this category
+    return !selectedTraits.some(t => t.category === trait.category);
+  };
+
   const handleTraitSelect = (trait: Trait) => {
     if (selectedTraits.some(t => t.name === trait.name)) {
       onTraitsChange(selectedTraits.filter(t => t.name !== trait.name));
     } else {
       // Check if we're at the trait limit
       if (selectedTraits.length >= 5) {
-        // TODO: Show a toast or alert to inform the user
         return;
       }
+      
+      // Check if we can select this trait based on category
+      if (!canSelectTrait(trait)) {
+        return;
+      }
+      
       onTraitsChange([...selectedTraits, trait]);
     }
   };
@@ -225,25 +238,37 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
                 </tr>
               </thead>
               <tbody>
-                {sortedTraits.map((trait, idx) => (
-                  <tr
-                    key={trait.name}
-                    className={`border-b cursor-pointer ${selectedTraits.some(t => t.name === trait.name) ? 'bg-blue-50' : ''}`}
-                    style={{ background: !selectedTraits.some(t => t.name === trait.name) && idx % 2 === 1 ? '#f0ede7' : undefined, cursor: 'pointer', transition: 'background 0.13s' }}
-                    onMouseOver={e => { if (!selectedTraits.some(t => t.name === trait.name)) { (e.currentTarget as HTMLTableRowElement).style.background = '#fbe7e6'; } }}
-                    onMouseOut={e => { if (!selectedTraits.some(t => t.name === trait.name)) { (e.currentTarget as HTMLTableRowElement).style.background = idx % 2 === 1 ? '#f0ede7' : ''; } }}
-                    onClick={() => handleTraitSelect(trait)}
-                    onMouseEnter={e => showTooltip(e, trait.display_name, trait.description)}
-                    onMouseMove={moveTooltip}
-                    onMouseLeave={hideTooltip}
-                  >
-                    <td className="p-2 w-[220px] min-w-[180px] max-w-[300px] whitespace-nowrap overflow-ellipsis overflow-hidden flex items-center">
-                      {renderTraitIcon(trait.name)}
-                      <span style={{ marginLeft: 8 }}>{trait.display_name}</span>
-                    </td>
-                    <td className="p-2">{trait.description}</td>
-                  </tr>
-                ))}
+                {sortedTraits.map((trait, idx) => {
+                  const isDisabled = !canSelectTrait(trait);
+                  return (
+                    <tr
+                      key={trait.name}
+                      className={`border-b cursor-pointer ${selectedTraits.some(t => t.name === trait.name) ? 'bg-blue-50' : ''} ${isDisabled ? 'opacity-50' : ''}`}
+                      style={{ 
+                        background: !selectedTraits.some(t => t.name === trait.name) && idx % 2 === 1 ? '#f0ede7' : undefined, 
+                        cursor: isDisabled ? 'not-allowed' : 'pointer', 
+                        transition: 'background 0.13s' 
+                      }}
+                      onMouseOver={e => { 
+                        if (!selectedTraits.some(t => t.name === trait.name) && !isDisabled) { 
+                          (e.currentTarget as HTMLTableRowElement).style.background = '#fbe7e6'; 
+                        } 
+                      }}
+                      onMouseOut={e => { 
+                        if (!selectedTraits.some(t => t.name === trait.name)) { 
+                          (e.currentTarget as HTMLTableRowElement).style.background = idx % 2 === 1 ? '#f0ede7' : ''; 
+                        } 
+                      }}
+                      onClick={() => !isDisabled && handleTraitSelect(trait)}
+                    >
+                      <td className="p-2 w-[220px] min-w-[180px] max-w-[300px] whitespace-nowrap overflow-ellipsis overflow-hidden flex items-center">
+                        {renderTraitIcon(trait.name)}
+                        <span style={{ marginLeft: 8 }}>{trait.display_name}</span>
+                      </td>
+                      <td className="p-2">{trait.description}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             {tooltip && (

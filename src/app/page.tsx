@@ -164,7 +164,7 @@ async function downloadMemberJson(member: Member) {
   URL.revokeObjectURL(url);
 }
 
-type Trait = { name: string; display_name: string; description: string };
+type Trait = { name: string; display_name: string; description: string; category: string };
 
 export default function HomePage() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -434,7 +434,12 @@ export default function HomePage() {
         country: data.country,
         careerStage: data.careerStage,
         portraitName: portrait.name,
-        traits: data.traits,
+        traits: (data.traits || []).map(trait => ({
+          name: trait.name,
+          display_name: trait.display_name,
+          description: trait.description,
+          category: typeof trait.category === 'string' ? trait.category : ''
+        })),
         stats: data.stats,
         cost: 0,
         type: data.type,
