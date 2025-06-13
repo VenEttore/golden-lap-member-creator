@@ -7,8 +7,6 @@ import { cn } from "@/lib/utils"
 
 const Dialog = DialogPrimitive.Root
 
-const DialogTrigger = DialogPrimitive.Trigger
-
 const DialogPortal = (props: DialogPrimitive.DialogPortalProps) => (
   <DialogPrimitive.Portal {...props} />
 )
@@ -81,17 +79,10 @@ const DialogDescription = React.forwardRef<
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
-const DialogClose = DialogPrimitive.Close
-
 export {
   Dialog,
-  DialogPortal,
-  DialogOverlay,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogFooter,
   DialogTitle,
-  DialogDescription,
-  DialogClose,
 } 

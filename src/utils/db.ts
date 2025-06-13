@@ -15,7 +15,7 @@ export interface Member {
   createdAt?: number;
 }
 
-export interface PortraitConfig {
+interface PortraitConfig {
   name: string;
   config: {
     hair: string;
@@ -32,7 +32,7 @@ export interface PortraitConfig {
   uploaded?: boolean;
 }
 
-export interface Modpack {
+interface Modpack {
   id: string;
   name: string;
   description: string;
