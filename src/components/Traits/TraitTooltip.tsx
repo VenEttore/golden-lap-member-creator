@@ -9,11 +9,6 @@ interface TraitTooltipProps {
   hideTooltip?: () => void;
 }
 
-// Helper to clamp a value between min and max
-function clamp(val: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, val));
-}
-
 function TraitTooltipBody({ title, description, x, y }: TraitTooltipProps) {
   // Tooltip dimensions and offset (approximate, matches legacy)
   const OFFSET = 16;
@@ -134,6 +129,4 @@ export function useTraitTooltip() {
     moveTooltip,
     hideTooltip,
   };
-}
-
-export { clamp }; 
+} 

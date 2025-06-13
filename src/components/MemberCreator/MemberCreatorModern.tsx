@@ -186,7 +186,6 @@ interface MemberCreatorModernProps {
 const RANDOM_NATIONS = [
   'AU', 'BR', 'CA', 'CH', 'DE', 'DK', 'ES', 'FI', 'FR', 'GB', 'IE', 'IN', 'MX', 'NL', 'NO', 'NZ', 'RS', 'TR', 'UA', 'US'
 ];
-const CAREER_STAGES = ['early', 'mid', 'late', 'last_year'];
 
 async function fetchRandomName(nat: string) {
   const res = await fetch(`https://randomuser.me/api/?gender=male&nat=${nat.toLowerCase()}`);
@@ -655,4 +654,4 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
   );
 }
 
-export { Button, fetchRandomName, fetchRandomTraits, RANDOM_NATIONS, CAREER_STAGES }; 
+export { Button, fetchRandomTraits, RANDOM_NATIONS }; 

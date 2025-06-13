@@ -3,13 +3,6 @@
 import { PortraitSelection } from '@/types/portrait';
 import { compositePortraitFrontend } from './portraitStorage';
 
-export interface PortraitConfig {
-  name: string;
-  config: PortraitSelection;
-  thumbnail: string;
-  fullSizeImage: string;
-}
-
 export async function generateBatchPortraitsSSE(
   configs: PortraitSelection[],
   onPortrait: (result: { name: string; config: PortraitSelection; thumbnail: string; fullSizeImage: string }) => void

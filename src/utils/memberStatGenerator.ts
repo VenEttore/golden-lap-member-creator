@@ -1,6 +1,6 @@
 // Ported from gen_member_stats.py
 
-export type MemberType = 'chief' | 'driver' | 'engineer';
+type MemberType = 'chief' | 'driver' | 'engineer';
 
 type StatDistribution = Record<number, number>;
 type ConditionalDistribution = Record<number, Record<number, number>>;

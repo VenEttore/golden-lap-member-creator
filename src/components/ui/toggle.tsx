@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-export interface ToggleProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ToggleProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   pressed?: boolean
 }
 

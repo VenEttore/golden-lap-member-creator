@@ -19,11 +19,6 @@ export async function getPortraits(): Promise<PortraitConfig[]> {
   return await db.portraits.toArray();
 }
 
-// Save all portraits
-export async function savePortraits(portraits: PortraitConfig[]): Promise<void> {
-  await db.portraits.bulkPut(portraits);
-}
-
 // Add or update a portrait
 export async function addOrUpdatePortrait(portrait: PortraitConfig): Promise<void> {
   const portraits = await getPortraits();
@@ -33,36 +28,12 @@ export async function addOrUpdatePortrait(portrait: PortraitConfig): Promise<voi
   } else {
     portraits.push(portrait);
   }
-  await savePortraits(portraits);
+  await db.portraits.bulkPut(portraits);
 }
 
 // Delete a portrait by name
 export async function deletePortrait(name: string): Promise<void> {
   await db.portraits.delete(name);
-}
-
-// Delete all portraits
-export async function deleteAllPortraits(): Promise<void> {
-  await db.portraits.clear();
-}
-
-// Unified async portrait display URL getter
-export async function getPortraitDisplayUrl(portrait: PortraitConfig): Promise<string> {
-  // 1. Try cache (full-size)
-  try {
-    const cache = await caches.open('portraits-full');
-    const response = await cache.match(`/portraits/${portrait.name}.png`);
-    if (response) {
-      const blob = await response.blob();
-      return URL.createObjectURL(blob);
-    }
-  } catch {}
-  // 2. If uploaded, use fullSizeImage data URL
-  if (portrait.uploaded && portrait.fullSizeImage) {
-    return portrait.fullSizeImage;
-  }
-  // 3. Fallback: use thumbnail
-  return portrait.thumbnail;
 }
 
 // Composite a portrait on the frontend (1024x1024, no suit)
@@ -166,5 +137,5 @@ export async function addOrUpdatePortraitsBatch(portraitsToAdd: PortraitConfig[]
       portraits.push(newPortrait);
     }
   }
-  await savePortraits(portraits);
+  await db.portraits.bulkPut(portraits);
 } 
