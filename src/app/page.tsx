@@ -155,8 +155,14 @@ async function downloadMemberJson(member: Member) {
     }
   }
 
-  // Generate and download the ZIP file
-  const blob = await zip.generateAsync({ type: 'blob' });
+  // Generate and download the ZIP file with optimized compression
+  const blob = await zip.generateAsync({ 
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: {
+      level: 6 // Balance between speed and size
+    }
+  });
   safeDownloadFile(blob, `${member.name}${member.surname ? ' ' + member.surname : ''}`.trim() + '.zip');
 }
 

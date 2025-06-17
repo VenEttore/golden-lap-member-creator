@@ -165,8 +165,14 @@ export default function MemberPreviewModal({ open, onClose, name, surname, count
       }
     }
 
-    // Generate and download the ZIP file
-    const blob = await zip.generateAsync({ type: 'blob' });
+    // Generate and download the ZIP file with optimized compression
+    const blob = await zip.generateAsync({ 
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: {
+        level: 6 // Balance between speed and size
+      }
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

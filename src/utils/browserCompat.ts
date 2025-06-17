@@ -17,6 +17,16 @@ interface ElectronAPI {
   removeAllListeners: (channel: string) => void;
   platform: string;
   isElectron: boolean;
+  // Performance monitoring API
+  performance?: {
+    getMemoryUsage: () => NodeJS.MemoryUsage;
+    cleanupMemory: () => Promise<{ success: boolean }>;
+    now: () => number;
+  };
+  // File operations API
+  fileOperations?: {
+    optimizeExport: (data: unknown) => Promise<{ success: boolean }>;
+  };
 }
 
 declare global {

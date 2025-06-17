@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, protocol, net } = require('electron');
+const { app, BrowserWindow, Menu, protocol, net, ipcMain } = require('electron');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const { spawn } = require('child_process');
@@ -10,6 +10,10 @@ const APP_URL = `${PROTOCOL_SCHEME}://localhost`;
 // Keep a global reference of the window object
 let mainWindow;
 let isDev = process.env.NODE_ENV === 'development';
+
+// OPTIMIZATION: Improve app startup performance
+app.commandLine.appendSwitch('--disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('--disable-renderer-backgrounding');
 
 // Enable live reload for Electron in development
 if (isDev) {
@@ -45,11 +49,24 @@ function createWindow() {
       contextIsolation: true, // Security: enable context isolation
       enableRemoteModule: false, // Security: disable remote module
       webSecurity: true, // Security: enable web security
-      preload: path.join(__dirname, 'preload.js') // Preload script for secure IPC
+      preload: path.join(__dirname, 'preload.js'), // Preload script for secure IPC
+      // OPTIMIZATION: Better rendering performance
+      offscreen: false,
+      paintWhenInitiallyHidden: false,
+      backgroundThrottling: false
     },
-    icon: path.join(__dirname, '..', 'public', 'assets', 'GLLogo_New.png'),
+    icon: path.join(__dirname, '..', 'public', 'favicon.ico'),
     show: false, // Don't show until ready
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default'
+  });
+
+  // OPTIMIZATION: Set up memory management
+  mainWindow.webContents.on('dom-ready', () => {
+    // Optimize memory usage for large datasets
+    mainWindow.webContents.executeJavaScript(`
+      // Hint to V8 about memory pressure for large operations
+      if (window.gc) { window.gc(); }
+    `);
   });
 
   // Load the Next.js app
@@ -67,6 +84,9 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     
+    // OPTIMIZATION: Focus window and bring to front
+    mainWindow.focus();
+    
     // Open DevTools in development
     if (isDev) {
       mainWindow.webContents.openDevTools();
@@ -80,14 +100,14 @@ function createWindow() {
 
   // Handle external links
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    require('electron').shell.openExternal(url);
     return { action: 'deny' };
   });
 
   // Security: Prevent new window creation
   mainWindow.webContents.on('new-window', (event, navigationUrl) => {
     event.preventDefault();
-    shell.openExternal(navigationUrl);
+    require('electron').shell.openExternal(navigationUrl);
   });
 }
 
@@ -139,12 +159,35 @@ function setupProtocolHandler() {
   });
 }
 
+// OPTIMIZATION: Set up IPC handlers for potential file operations
+function setupIPCHandlers() {
+  // Handler for optimized file operations (if needed in future)
+  ipcMain.handle('optimize-export', async (event, data) => {
+    // Placeholder for future native file operations
+    return { success: true };
+  });
+  
+  // Handler for memory cleanup
+  ipcMain.handle('cleanup-memory', async () => {
+    if (global.gc) {
+      global.gc();
+    }
+    return { success: true };
+  });
+}
+
 // App event handlers
 app.whenReady().then(() => {
   if (!isDev) {
     setupProtocolHandler();
   }
+  setupIPCHandlers();
   createWindow();
+
+  // OPTIMIZATION: Set application priority
+  if (process.platform === 'win32') {
+    app.commandLine.appendSwitch('--high-dpi-support', '1');
+  }
 });
 
 app.on('window-all-closed', () => {

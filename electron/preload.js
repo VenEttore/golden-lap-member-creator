@@ -9,7 +9,49 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Check if running in Electron
   isElectron: true,
+  
+  // OPTIMIZATION: Performance monitoring
+  performance: {
+    // Memory usage information
+    getMemoryUsage: () => process.memoryUsage(),
+    
+    // Trigger garbage collection if available
+    cleanupMemory: () => ipcRenderer.invoke('cleanup-memory'),
+    
+    // Performance timing
+    now: () => performance.now(),
+  },
+  
+  // OPTIMIZATION: Future file operations (placeholder)
+  fileOperations: {
+    optimizeExport: (data) => ipcRenderer.invoke('optimize-export', data),
+  }
 });
+
+// OPTIMIZATION: Set up performance monitoring in development
+if (process.env.NODE_ENV === 'development') {
+  let memoryCheckInterval;
+  
+  window.addEventListener('DOMContentLoaded', () => {
+    // Monitor memory usage every 30 seconds in development
+    memoryCheckInterval = setInterval(() => {
+      const memory = process.memoryUsage();
+      if (memory.heapUsed > 100 * 1024 * 1024) { // 100MB threshold
+        console.warn('High memory usage detected:', {
+          heapUsed: Math.round(memory.heapUsed / 1024 / 1024) + 'MB',
+          heapTotal: Math.round(memory.heapTotal / 1024 / 1024) + 'MB'
+        });
+      }
+    }, 30000);
+  });
+  
+  // Cleanup on unload
+  window.addEventListener('beforeunload', () => {
+    if (memoryCheckInterval) {
+      clearInterval(memoryCheckInterval);
+    }
+  });
+}
 
 // Additional security: Remove any potential Node.js globals
 delete window.require;

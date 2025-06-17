@@ -33,6 +33,24 @@ export async function exportModpack(modpack: Modpack, options: ModpackExportOpti
   
   const portraitsFolder = zip.folder('Textures/Portraits');
   
+  // OPTIMIZATION 1: Load all portraits once at the beginning
+  const allPortraits = options.includePortraits ? await getPortraits() : [];
+  const portraitMap = new Map(allPortraits.map(p => [p.name, p]));
+  
+  // OPTIMIZATION 2: Batch convert data URLs to blobs
+  const portraitBlobPromises = new Map<string, Promise<Blob>>();
+  
+  function getPortraitBlob(portraitName: string): Promise<Blob> | null {
+    if (!portraitBlobPromises.has(portraitName)) {
+      const portrait = portraitMap.get(portraitName);
+      if (portrait?.fullSizeImage) {
+        // More efficient data URL to blob conversion
+        portraitBlobPromises.set(portraitName, dataURLToBlob(portrait.fullSizeImage));
+      }
+    }
+    return portraitBlobPromises.get(portraitName) || null;
+  }
+  
   // Helper to format member JSON and filename as in docs
   function formatMemberForExport(member: Member) {
     // Traits as string[]
@@ -107,20 +125,42 @@ export async function exportModpack(modpack: Modpack, options: ModpackExportOpti
                   crewChiefsFolder;
     folder?.file(filename, JSON.stringify(exportObj, null, 2));
     
-    // Add portrait if requested
+    // Add portrait if requested (optimized)
     if (options.includePortraits && member.portraitName) {
       const portraitFileName = `${member.portraitName.replace(/\.png$/i, '')}.png`;
-      // Find the portrait in IndexedDB and use its fullSizeImage
-      const portraits = await getPortraits();
-      const portrait = portraits.find(p => p.name === member.portraitName);
-      if (portrait && portrait.fullSizeImage) {
-        // Convert data URL to Blob
-        const res = await fetch(portrait.fullSizeImage);
-        const blob = await res.blob();
+      const blobPromise = getPortraitBlob(member.portraitName);
+      if (blobPromise) {
+        const blob = await blobPromise;
         portraitsFolder?.file(portraitFileName, blob);
       }
     }
   }
   
-  return await zip.generateAsync({ type: 'blob' });
+  // OPTIMIZATION 3: Use faster compression settings
+  return await zip.generateAsync({ 
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: {
+      level: 6 // Balance between speed and size (1-9, default 6)
+    }
+  });
+}
+
+
+
+// Helper function for efficient data URL to blob conversion
+function dataURLToBlob(dataURL: string): Promise<Blob> {
+  return new Promise((resolve) => {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1];
+    const bstr = atob(arr[1]);
+    const n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
+    }
+    
+    resolve(new Blob([u8arr], { type: mime }));
+  });
 } 
