@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { db } from '@/utils/db';
+import { safeWindow } from '@/utils/browserCompat';
 
 export default function NavSidebar() {
   const [open, setOpen] = useState(false);
@@ -19,9 +20,9 @@ export default function NavSidebar() {
   }
 
   async function handleDeleteAllData() {
-    if (window.confirm('Are you sure you want to delete ALL app data? This cannot be undone.')) {
+    if (safeWindow.confirm('Are you sure you want to delete ALL app data? This cannot be undone.')) {
       await db.delete();
-      window.location.reload();
+      safeWindow.reload();
     }
   }
 

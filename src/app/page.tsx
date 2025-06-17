@@ -15,6 +15,7 @@ import { Toggle } from '../components/ui/toggle';
 import JSZip from 'jszip';
 import { Modpack } from '../types/modpack';
 import { fetchRandomTraits, RANDOM_NATIONS } from '../components/MemberCreator/MemberCreatorModern';
+import { safeDownloadFile } from '../utils/browserCompat';
 import { generateMemberStats } from '../utils/memberStatGenerator';
 import { PortraitConfig } from '../types/portrait';
 import { weightedCareerStage } from '@/utils/randomUtils';
@@ -156,12 +157,7 @@ async function downloadMemberJson(member: Member) {
 
   // Generate and download the ZIP file
   const blob = await zip.generateAsync({ type: 'blob' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${member.name}${member.surname ? ' ' + member.surname : ''}`.trim() + '.zip';
-  a.click();
-  URL.revokeObjectURL(url);
+  safeDownloadFile(blob, `${member.name}${member.surname ? ' ' + member.surname : ''}`.trim() + '.zip');
 }
 
 type Trait = { name: string; display_name: string; description: string; category: string };
@@ -175,7 +171,7 @@ export default function HomePage() {
   const [showModpackDialog, setShowModpackDialog] = useState(false);
   const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState(false);
   const [modpacks, setModpacks] = useState<Modpack[]>([]);
-  const [iconData, setIconData] = useState<Record<string, Record<string, { display_name: string; description: string; x: number; y: number }>> | null>(null);
+  const [iconData, setIconData] = useState<Record<string, unknown> | null>(null);
   const [showRandomModal, setShowRandomModal] = useState(false);
   const [randomCounts, setRandomCounts] = useState({ driver: 1, engineer: 1, crew_chief: 1 });
   const [isGenerating, setIsGenerating] = useState(false);
@@ -205,14 +201,9 @@ export default function HomePage() {
 
   async function loadIconData() {
     try {
-      const [driverResponse, engcrewResponse] = await Promise.all([
-        fetch('/assets/drivers_data.json'),
-        fetch('/assets/engcrew_data.json')
-      ]);
-      const [driverData, engcrewData] = await Promise.all([
-        driverResponse.json(),
-        engcrewResponse.json()
-      ]);
+      const { getIconData } = await import('../data');
+      const driverData = getIconData('driver');
+      const engcrewData = getIconData('engineer');
       setIconData({ driver: driverData, engineer: engcrewData, crew_chief: engcrewData });
     } catch (error) {
       console.error('Failed to load icon data:', error);
@@ -372,7 +363,7 @@ export default function HomePage() {
       for (let i = 0; i < totalMembers; ++i) {
         const type = typeList[i];
         const nameObj = names[i];
-        const traits = await fetchRandomTraits(type);
+        const traits = fetchRandomTraits(type);
         // Determine trait for stat generation
         let statTrait: 'none' | 'privateer' | 'rich' = 'none';
         if (type === 'driver') {
@@ -693,7 +684,7 @@ export default function HomePage() {
               onDelete={handleDelete}
               onPreview={handlePreview}
               onDownload={downloadMemberJson}
-              iconData={iconData || {}}
+              iconData={(iconData || {}) as Record<string, Record<string, { display_name: string; description: string; x: number; y: number }>>}
               currentPage={currentPage}
               rowsPerPage={rowsPerPage}
               sorts={sorts}

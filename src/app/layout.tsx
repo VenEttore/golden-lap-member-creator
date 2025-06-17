@@ -4,6 +4,7 @@ import "./globals.css";
 import NavSidebar from "../components/ui/NavSidebar";
 import { Toaster } from "sonner";
 import AppLegalNotice from '../components/AppLegalNotice';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +31,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NavSidebar />
-        {children}
+        <ErrorBoundary>
+          <NavSidebar />
+          {children}
         <Toaster
           position="bottom-right"
           richColors
@@ -52,9 +54,10 @@ export default function RootLayout({
             duration: 6000,
           }}
         />
-        <footer>
-          <AppLegalNotice />
-        </footer>
+          <footer>
+            <AppLegalNotice />
+          </footer>
+        </ErrorBoundary>
       </body>
     </html>
   );

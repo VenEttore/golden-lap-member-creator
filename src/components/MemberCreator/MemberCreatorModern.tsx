@@ -17,6 +17,7 @@ import { StatsSection } from './StatsSection';
 import { InformationSection } from './InformationSection';
 import { calculateMemberCost } from '@/utils/costCalculator';
 import { PortraitSelector } from './PortraitSelector';
+import { getCountryCodes, getTraitData, getGenericTraitData } from '../../data';
 
 const memberTypes = [
   { value: 'driver', label: 'Driver' },
@@ -39,11 +40,9 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
 
   React.useEffect(() => {
     let isMounted = true;
-    async function fetchCountries() {
+    async function loadCountries() {
       try {
-        const res = await fetch('/data/codes.json');
-        if (!res.ok) throw new Error('Failed to fetch countries');
-        const data = await res.json();
+        const data = getCountryCodes();
         if (!isMounted) return;
         const arr = Object.entries(data).map(([label, code]) => ({
           value: String(code),
@@ -59,7 +58,7 @@ function NationalityCombobox({ value, onChange }: { value: string; onChange: (co
         setLoading(false);
       }
     }
-    fetchCountries();
+    loadCountries();
     return () => { isMounted = false; };
   }, []);
 
@@ -208,14 +207,9 @@ function weightedRandom(table: { value: number, weight: number }[]): number {
   return table[table.length - 1].value;
 }
 
-async function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
-  const traitFiles = {
-    driver: '/data/traits/driver_traits.json',
-    engineer: '/data/traits/engineer_traits.json',
-    crew_chief: '/data/traits/crew_chief_traits.json',
-  };
-  const genericTraits: TraitType[] = await fetch('/data/traits/generic_traits.json').then(r => r.json());
-  const typeTraits: TraitType[] = await fetch(traitFiles[type]).then(r => r.json());
+function fetchRandomTraits(type: 'driver' | 'engineer' | 'crew_chief') {
+  const genericTraits: TraitType[] = getGenericTraitData();
+  const typeTraits: TraitType[] = getTraitData(type);
   // Filter out career stage traits
   const CAREER_STAGE_TRAITS = ['EarlyCareer', 'MidCareer', 'LateCareer', 'LastYear'];
   let allTraits: TraitType[] = [...typeTraits, ...genericTraits].filter(trait => !CAREER_STAGE_TRAITS.includes(trait.name));
@@ -519,7 +513,7 @@ export default function MemberCreatorModern({ initialValues }: MemberCreatorMode
     else if (type === 'engineer') decadeStartContent = Math.random() < 0.3333;
     else if (type === 'crew_chief') decadeStartContent = Math.random() < 0.3333;
     const careerStage = weightedCareerStage(type);
-    const traits: TraitType[] = await fetchRandomTraits(type);
+    const traits: TraitType[] = fetchRandomTraits(type);
     // Fetch random name from API
     let randomName = { name: '', surname: '' };
     try {

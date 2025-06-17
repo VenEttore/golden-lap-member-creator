@@ -4,6 +4,7 @@ import { useTraitTooltip, TraitTooltip } from './TraitTooltip';
 import { Card } from '../ui/Card';
 import { MemberType, Trait } from '@/types/member';
 import { filterTraits } from '@/utils/traitUtils';
+import { getTraitData, getGenericTraitData, getIconData } from '../../data';
 
 const driversSheet = '/assets/drivers_sheet.png';
 const engcrewSheet = '/assets/engcrew_sheet.png';
@@ -92,16 +93,14 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
   const { tooltip, showTooltip, moveTooltip, hideTooltip } = useTraitTooltip();
 
   useEffect(() => {
-    // Load traits based on member type
+    // Load traits based on member type using bundled data
     const loadTraits = async () => {
       try {
         // Load member type specific traits
-        const memberTypeResponse = await fetch(`/data/traits/${memberType}_traits.json`);
-        const memberTypeData = await memberTypeResponse.json();
+        const memberTypeData = getTraitData(memberType);
         
         // Load generic traits
-        const genericResponse = await fetch('/data/traits/generic_traits.json');
-        const genericData = await genericResponse.json();
+        const genericData = getGenericTraitData();
         
         // Combine and filter out career stage traits
         const allTraits = [...memberTypeData, ...genericData].filter(
@@ -118,14 +117,10 @@ export default function TraitsSection({ memberType, selectedTraits, onTraitsChan
   }, [memberType]);
 
   useEffect(() => {
-    // Load icon data based on member type
+    // Load icon data based on member type using bundled data
     const loadIconData = async () => {
       try {
-        const iconDataUrl = memberType === 'driver'
-          ? '/assets/drivers_data.json'
-          : '/assets/engcrew_data.json';
-        const response = await fetch(iconDataUrl);
-        const data = await response.json();
+        const data = getIconData(memberType);
         setIconData(data);
       } catch {
         setIconData(null);
