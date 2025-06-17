@@ -6,6 +6,10 @@ on:
       - 'v*' # Triggers on version tags like v1.0.0, v1.0.1, etc.
   workflow_dispatch: # Allows manual triggering
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build-and-release:
     runs-on: windows-latest
@@ -42,48 +46,41 @@ jobs:
       shell: powershell
       
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Golden Lap Member Creator ${{ steps.get_version.outputs.VERSION }}
-        body: |
-          ## Golden Lap Member Creator ${{ steps.get_version.outputs.VERSION }}
-          
-          ### 📦 Download
-          Download the portable executable below - no installation required!
-          
-          ### 🚀 What's New
-          - Bug fixes and improvements
-          - Enhanced performance
-          
-          ### 💻 System Requirements
-          - Windows 10/11 (64-bit)
-          - No additional software required
-          
-          ### 📖 Usage
-          1. Download the ZIP file below
-          2. Extract to any folder
-          3. Run `golden-lap-member-creator.exe`
-          4. Start creating your custom Golden Lap team members!
-          
-          ### 🔧 Features
-          - Create and edit custom team members
-          - Portrait generation and customization
-          - Modpack creation and export
-          - Batch operations for multiple members
-          - Offline functionality - no internet required
-        draft: false
-        prerelease: false
+      run: |
+        $version = "${{ steps.get_version.outputs.VERSION }}"
         
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/golden-lap-member-creator-win32-x64.zip
-        asset_name: golden-lap-member-creator-win32-x64.zip
-        asset_content_type: application/zip 
+        $releaseNotes = @"
+        ## Golden Lap Member Creator $version
+        
+        ### 📦 Download
+        Download the portable executable below - no installation required!
+        
+        ### 🚀 What's New
+        - Bug fixes and improvements
+        - Enhanced performance
+        
+        ### 💻 System Requirements
+        - Windows 10/11 (64-bit)
+        - No additional software required
+        
+        ### 📖 Usage
+        1. Download the ZIP file below
+        2. Extract to any folder
+        3. Run ``golden-lap-member-creator.exe``
+        4. Start creating your custom Golden Lap team members!
+        
+        ### 🔧 Features
+        - Create and edit custom team members
+        - Portrait generation and customization
+        - Modpack creation and export
+        - Batch operations for multiple members
+        - Offline functionality - no internet required
+        "@
+        
+        gh release create $version `
+          --title "Golden Lap Member Creator $version" `
+          --notes "$releaseNotes" `
+          --latest `
+          "./dist/golden-lap-member-creator-win32-x64.zip#golden-lap-member-creator-win32-x64.zip" 
