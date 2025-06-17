@@ -84,7 +84,7 @@
           ]
         }
       ],
-      "icon": "public/assets/GLLogo_New.png"
+      "icon": "public/favicon.ico"
     },
     "mac": {
       "target": [
@@ -96,7 +96,7 @@
           ]
         }
       ],
-      "icon": "public/assets/GLLogo_New.png",
+      "icon": "public/favicon.ico",
       "category": "public.app-category.games"
     },
     "linux": {
@@ -108,7 +108,7 @@
           ]
         }
       ],
-      "icon": "public/assets/GLLogo_New.png",
+      "icon": "public/favicon.ico",
       "category": "Game"
     }
   }
