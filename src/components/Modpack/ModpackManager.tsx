@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faDownload, faEdit, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { Card } from '../ui/Card';
 import { Toggle } from '../ui/toggle';
+import { perfMonitor } from '../../utils/performanceMonitor';
 
 export default function ModpackManager() {
   const [modpacks, setModpacks] = useState<Modpack[]>([]);
@@ -18,6 +19,7 @@ export default function ModpackManager() {
   const [memberError, setMemberError] = useState<string | null>(null);
   const isEditing = !!draft && !!draft.id && modpacks.some(m => m.id === draft.id);
   const [downloading, setDownloading] = useState(false);
+  const [exportStats, setExportStats] = useState<{ time: number; environment: string; memberCount: number; portraitCount: number } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -116,12 +118,47 @@ export default function ModpackManager() {
   // Export
   const handleExport = async (modpack: Modpack) => {
     setDownloading(true);
+    setExportStats(null);
+    
+    // Detect environment
+    const isElectron = typeof window !== 'undefined' && !!(window as unknown as { electronAPI?: unknown }).electronAPI;
+    const environment = isElectron ? 'Electron' : 'Next.js Web';
+    
+    // Count members and portraits for stats
+    const modpackMembers = members.filter(m => modpack.members.includes(m.id));
+    const portraitCount = modpackMembers.filter(m => m.portraitName).length;
+    
+    console.group(`🚀 Modpack Export Performance - ${environment}`);
+    console.log(`📊 Export Details:`, {
+      modpackName: modpack.name,
+      memberCount: modpackMembers.length,
+      portraitCount,
+      environment
+    });
+
+    const startTime = performance.now();
+    
     try {
       const blob = await exportModpack(modpack, {
         includePortraits: true,
         decadeStartContent: true,
         outputFormat: 'zip',
       });
+      
+      const totalTime = performance.now() - startTime;
+      
+      // Store stats for display
+      setExportStats({
+        time: totalTime,
+        environment,
+        memberCount: modpackMembers.length,
+        portraitCount
+      });
+      
+      console.log(`✅ Export completed in ${totalTime.toFixed(2)}ms`);
+      console.log(`📈 Performance Breakdown:`, perfMonitor.getStats());
+      console.groupEnd();
+      
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -130,10 +167,18 @@ export default function ModpackManager() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      
+      // Show success message with timing
+      console.log(`🎉 ${environment} Export Success: ${modpack.name} (${modpackMembers.length} members, ${portraitCount} portraits) in ${totalTime.toFixed(2)}ms`);
+      
     } catch (error) {
-      console.error('Error exporting modpack:', error);
+      console.error('❌ Export error:', error);
+      console.groupEnd();
     } finally {
       setDownloading(false);
+      
+      // Clear stats after 10 seconds
+      setTimeout(() => setExportStats(null), 10000);
     }
   };
 
@@ -289,6 +334,35 @@ export default function ModpackManager() {
           </div>
         </div>
       </div>
+      
+      {/* Performance Stats Display */}
+      {exportStats && (
+        <div className="fixed bottom-4 right-4 z-40 max-w-sm">
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+              border: '2px solid #2e7d32',
+              borderRadius: 16,
+              boxShadow: '0 8px 32px rgba(76, 175, 80, 0.2)',
+              color: 'white',
+              padding: '16px 20px',
+              fontFamily: 'Figtree, Inter, sans-serif',
+              animation: 'slideIn 0.3s ease-out'
+            }}
+          >
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              🚀 Export Complete!
+            </div>
+            <div style={{ fontSize: '0.9rem', lineHeight: 1.4 }}>
+              <div><strong>Environment:</strong> {exportStats.environment}</div>
+              <div><strong>Time:</strong> {exportStats.time.toFixed(2)}ms</div>
+              <div><strong>Members:</strong> {exportStats.memberCount}</div>
+              <div><strong>Portraits:</strong> {exportStats.portraitCount}</div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* UI overlay for download in progress */}
       {downloading && (
         <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.13)', backdropFilter: 'blur(7px)' }}>

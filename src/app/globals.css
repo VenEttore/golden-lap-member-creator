@@ -43,3 +43,15 @@ html, body, #__next, #root {
 .gl-toast[data-type='error'] .sonner-icon {
   color: #fff !important;
 }
+
+/* Performance stats slide-in animation */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

@@ -65,7 +65,8 @@
     "files": [
       "out/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/**/*"
     ],
     "nodeGypRebuild": false,
     "extraResources": [
