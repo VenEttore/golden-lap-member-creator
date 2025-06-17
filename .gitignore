@@ -20,6 +20,13 @@
 # production
 /build
 
+# electron build artifacts
+/dist/
+*.log
+*.pid
+*.seed
+*.pid.lock
+
 # misc
 .DS_Store
 *.pem

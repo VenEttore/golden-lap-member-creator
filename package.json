@@ -1,13 +1,23 @@
 {
   "name": "golden-lap-member-creator",
-  "version": "0.10.2",
+  "version": "1.0.0",
+  "description": "A fan-made tool for creating custom team members for the Golden Lap racing game",
+  "main": "electron/main.js",
+  "homepage": "./",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "npx serve out",
     "lint": "next lint",
-    "test:vitest": "vitest run"
+    "test:vitest": "vitest run",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
+    "electron:pack": "electron-builder",
+    "electron:dist": "npm run build && electron-builder",
+    "electron:package": "npm run build && electron-packager . golden-lap-member-creator --platform=win32 --arch=x64 --out=dist --overwrite --ignore=\"src|public|\\.next|\\.git|README\\.md|LICENSE|tsconfig\\.json|postcss\\.config\\.mjs|components\\.json|\\.eslintrc\\.json|vitest\\.config\\.ts\"",
+    "preelectron:pack": "npm run build",
+    "preelectron:dist": "npm run build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -33,10 +43,72 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^36.4.0",
+    "electron-builder": "^26.0.12",
+    "electron-packager": "^17.1.2",
+    "electron-reload": "^2.0.0-alpha.1",
     "eslint": "9.29.0",
     "eslint-config-next": "15.3.3",
     "typescript": "^5",
-    "vitest": "^3.1.4"
+    "vitest": "^3.1.4",
+    "wait-on": "^8.0.3"
   },
-  "type": "module"
+  "build": {
+    "appId": "com.goldenlap.membercreator",
+    "productName": "Golden Lap Member Creator",
+    "directories": {
+      "output": "dist"
+    },
+    "npmRebuild": false,
+    "files": [
+      "out/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "nodeGypRebuild": false,
+    "extraResources": [
+      {
+        "from": "public/assets",
+        "to": "assets"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/assets/GLLogo_New.png"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "public/assets/GLLogo_New.png",
+      "category": "public.app-category.games"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/assets/GLLogo_New.png",
+      "category": "Game"
+    }
+  }
 }

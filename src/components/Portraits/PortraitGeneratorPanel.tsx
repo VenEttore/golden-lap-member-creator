@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { getPortraits } from '@/utils/portraitStorage';
 import { compositePortraitFrontend } from '@/utils/portraitStorage';
 import { PortraitConfig, PortraitSelection } from '@/types/portrait';
+import { getSpriteData } from '@/data';
+import { createSafeImage } from '@/utils/browserCompat';
 
 // Preset color swatches
 const SKIN_SWATCHES = [
@@ -142,28 +144,53 @@ const PortraitGeneratorPanel: React.FC<PortraitGeneratorPanelProps> = ({ initial
   useEffect(() => {
     async function loadAll() {
       setLoading(true);
-      const loadedManifests: ManifestState = {};
+      
+      // Use bundled sprite data instead of fetch
+      const loadedManifests: ManifestState = {
+        hair: getSpriteData('hair'),
+        brow: getSpriteData('brow'),
+        facial: getSpriteData('facial'),
+        hairBack: getSpriteData('hairBack'),
+        head: getSpriteData('head')
+      };
+      
       const loadedImages: ImageState = {};
       for (const key of Object.keys(PARTS)) {
-        loadedManifests[key] = await fetch(PARTS[key as keyof typeof PARTS].manifest).then(r => r.json());
-        loadedImages[key] = await new Promise<HTMLImageElement>(res => {
-          const img = new window.Image();
+        loadedImages[key] = await new Promise<HTMLImageElement>((res, rej) => {
+          const img = createSafeImage();
+          if (!img) {
+            // Fallback for SSR - create a mock image element
+            const mockImg = { width: 0, height: 0, src: '', onload: null, onerror: null } as HTMLImageElement;
+            res(mockImg);
+            return;
+          }
           img.src = PARTS[key as keyof typeof PARTS].image;
           img.onload = () => res(img);
+          img.onerror = () => rej(new Error(`Failed to load image: ${PARTS[key as keyof typeof PARTS].image}`));
         });
       }
-      const suit = await new Promise<HTMLImageElement>(res => {
-        const img = new window.Image();
+      
+      const suit = await new Promise<HTMLImageElement>((res, rej) => {
+        const img = createSafeImage();
+        if (!img) {
+          // Fallback for SSR - create a mock image element
+          const mockImg = { width: 0, height: 0, src: '', onload: null, onerror: null } as HTMLImageElement;
+          res(mockImg);
+          return;
+        }
         img.src = SUIT_IMAGE;
         img.onload = () => res(img);
+        img.onerror = () => rej(new Error(`Failed to load suit image: ${SUIT_IMAGE}`));
       });
+      
       setManifests(loadedManifests);
       setImages(loadedImages);
       setSuitImg(suit);
       setLoading(false);
     }
+    
     loadAll();
-  }, []);
+  }, []); // Empty dependency array - should only run once on mount
 
   // Filter head manifest for heads, ears, neck
   const headEntries = useMemo(() => 

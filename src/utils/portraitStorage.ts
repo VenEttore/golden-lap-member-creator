@@ -1,5 +1,7 @@
 import { PortraitConfig } from '@/types/portrait';
 import { db } from './db';
+import { getSpriteData } from '@/data';
+import { createSafeImage, createSafeCanvas } from '@/utils/browserCompat';
 
 // Types for manifests and sprites
 interface SpriteEntry {
@@ -42,42 +44,58 @@ export async function compositePortraitFrontend(config: PortraitConfig['config']
   const LAYER_ORDER = ['hairBack', 'neck', 'ears', 'head', 'facial', 'brow', 'hair'];
   const PARTS = {
     hair: {
-      manifest: '/assets/hair/hair/HairSprite.json',
       image: '/assets/hair/hair/HairSprite.png',
     },
     brow: {
-      manifest: '/assets/hair/brow/HairBrowSprite.json',
       image: '/assets/hair/brow/HairBrowSprite.png',
     },
     facial: {
-      manifest: '/assets/hair/facial/HairFacialSprite.json',
       image: '/assets/hair/facial/HairFacialSprite.png',
     },
     hairBack: {
-      manifest: '/assets/hairBack/HairBackSprite.json',
       image: '/assets/hairBack/HairBackSprite.png',
     },
     head: {
-      manifest: '/assets/head/HeadSprite.json',
       image: '/assets/head/HeadSprite.png',
     },
   };
-  // Load manifests and images
-  const manifests: Record<string, ManifestData> = {};
+  
+  // Load manifests from bundled data and images
+  const manifests: Record<string, ManifestData> = {
+    hair: getSpriteData('hair'),
+    brow: getSpriteData('brow'),
+    facial: getSpriteData('facial'),
+    hairBack: getSpriteData('hairBack'),
+    head: getSpriteData('head')
+  };
+  
   const images: Record<string, HTMLImageElement> = {};
   for (const key of Object.keys(PARTS)) {
-    manifests[key] = await fetch(PARTS[key as keyof typeof PARTS].manifest).then(r => r.json() as Promise<ManifestData>);
-    images[key] = await new Promise<HTMLImageElement>(res => {
-      const img = new window.Image();
+    images[key] = await new Promise<HTMLImageElement>((res, rej) => {
+      const img = createSafeImage();
+      if (!img) {
+        // Fallback for SSR
+        const mockImg = { width: 0, height: 0, src: '', onload: null, onerror: null } as HTMLImageElement;
+        res(mockImg);
+        return;
+      }
       img.src = PARTS[key as keyof typeof PARTS].image;
       img.onload = () => res(img);
+      img.onerror = () => rej(new Error(`Failed to load image: ${PARTS[key as keyof typeof PARTS].image}`));
     });
   }
+  
   // Always use neck01 for neck
   const neckEntry = manifests.head?.sprites?.find((s: SpriteEntry) => s.fileName.toLowerCase().startsWith('neck'));
+  
   // Prepare canvas
   const SIZE = 1024;
-  const canvas = document.createElement('canvas');
+  const canvas = createSafeCanvas();
+  if (!canvas) {
+    // Fallback for SSR
+    return { fullSizeImage: '', thumbnail: '' };
+  }
+  
   canvas.width = SIZE;
   canvas.height = SIZE;
   const ctx = canvas.getContext('2d')!;
@@ -99,7 +117,9 @@ export async function compositePortraitFrontend(config: PortraitConfig['config']
     const img = images[layer === 'neck' ? 'head' : (layer === 'ears' || layer === 'head' ? 'head' : layer)];
     if (!img) continue;
     // Offscreen canvas for tinting/masking
-    const off = document.createElement('canvas');
+    const off = createSafeCanvas();
+    if (!off) continue; // Skip if canvas creation fails in SSR
+    
     off.width = off.height = SIZE;
     const octx = off.getContext('2d')!;
     octx.drawImage(img, entry.x, entry.y, entry.width, entry.height, 0, 0, SIZE, SIZE);
@@ -111,15 +131,23 @@ export async function compositePortraitFrontend(config: PortraitConfig['config']
     octx.globalCompositeOperation = 'source-over';
     ctx.drawImage(off, 0, 0);
   }
+  
   // Export PNG data URL
   const fullSizeImage = canvas.toDataURL('image/png');
+  
   // Generate thumbnail (64x64)
-  const thumbCanvas = document.createElement('canvas');
+  const thumbCanvas = createSafeCanvas();
+  if (!thumbCanvas) {
+    // Fallback for SSR
+    return { fullSizeImage, thumbnail: '' };
+  }
+  
   thumbCanvas.width = 64;
   thumbCanvas.height = 64;
   const thumbCtx = thumbCanvas.getContext('2d')!;
   thumbCtx.drawImage(canvas, 0, 0, 64, 64);
   const thumbnail = thumbCanvas.toDataURL('image/png');
+  
   return { fullSizeImage, thumbnail };
 }
 

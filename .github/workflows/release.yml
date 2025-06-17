@@ -1,0 +1,86 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on version tags like v1.0.0, v1.0.1, etc.
+  workflow_dispatch: # Allows manual triggering
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build Next.js app
+      run: npm run build
+      
+    - name: Build Electron app
+      run: npm run electron:package
+      
+    - name: Create ZIP archive
+      run: |
+        cd dist
+        Compress-Archive -Path "golden-lap-member-creator-win32-x64" -DestinationPath "golden-lap-member-creator-win32-x64.zip"
+        
+    - name: Get version from tag
+      id: get_version
+      run: |
+        $version = $env:GITHUB_REF -replace 'refs/tags/', ''
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+      shell: powershell
+      
+    - name: Create Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        $version = "${{ steps.get_version.outputs.VERSION }}"
+        
+        $releaseNotes = @"
+        ## Golden Lap Member Creator $version
+        
+        ### 📦 Download
+        Download the portable executable below - no installation required!
+        
+        ### 🚀 What's New
+        - Bug fixes and improvements
+        - Enhanced performance
+        
+        ### 💻 System Requirements
+        - Windows 10/11 (64-bit)
+        - No additional software required
+        
+        ### 📖 Usage
+        1. Download the ZIP file below
+        2. Extract to any folder
+        3. Run ``golden-lap-member-creator.exe``
+        4. Start creating your custom Golden Lap team members!
+        
+        ### 🔧 Features
+        - Create and edit custom team members
+        - Portrait generation and customization
+        - Modpack creation and export
+        - Batch operations for multiple members
+        - Offline functionality - no internet required
+        "@
+        
+        gh release create $version `
+          --title "Golden Lap Member Creator $version" `
+          --notes "$releaseNotes" `
+          --latest `
+          "./dist/golden-lap-member-creator-win32-x64.zip#golden-lap-member-creator-win32-x64.zip" 
