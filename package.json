@@ -15,6 +15,7 @@
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
     "electron:pack": "electron-builder",
     "electron:dist": "npm run build && electron-builder",
+    "electron:package": "npm run build && electron-packager . golden-lap-member-creator --platform=win32 --arch=x64 --out=dist --overwrite --ignore=\"src|public|\\.next|\\.git|README\\.md|LICENSE|tsconfig\\.json|postcss\\.config\\.mjs|components\\.json|\\.eslintrc\\.json|vitest\\.config\\.ts\"",
     "preelectron:pack": "npm run build",
     "preelectron:dist": "npm run build"
   },
@@ -46,6 +47,7 @@
     "cross-env": "^7.0.3",
     "electron": "^36.4.0",
     "electron-builder": "^26.0.12",
+    "electron-packager": "^17.1.2",
     "electron-reload": "^2.0.0-alpha.1",
     "eslint": "9.29.0",
     "eslint-config-next": "15.3.3",
@@ -59,12 +61,13 @@
     "directories": {
       "output": "dist"
     },
+    "npmRebuild": false,
     "files": [
       "out/**/*",
       "electron/**/*",
-      "node_modules/**/*",
       "package.json"
     ],
+    "nodeGypRebuild": false,
     "extraResources": [
       {
         "from": "public/assets",
@@ -74,7 +77,7 @@
     "win": {
       "target": [
         {
-          "target": "nsis",
+          "target": "portable",
           "arch": [
             "x64"
           ]
@@ -106,13 +109,6 @@
       ],
       "icon": "public/assets/GLLogo_New.png",
       "category": "Game"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
     }
   }
 }

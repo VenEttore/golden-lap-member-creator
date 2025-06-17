@@ -112,7 +112,12 @@ function setupProtocolHandler() {
       
       // Resolve the file path relative to the out directory
       const appPath = app.getAppPath();
-      const outDir = path.join(appPath, 'out');
+      
+      // Check if we're in a packaged app (app.isPackaged) or development
+      const outDir = app.isPackaged 
+        ? path.join(appPath, 'out')  // In packaged app: resources/app/out
+        : path.join(appPath, 'out'); // In development: ./out
+      
       const resolvedPath = path.join(outDir, filePath);
       
       // Security check: ensure the resolved path is within the out directory
