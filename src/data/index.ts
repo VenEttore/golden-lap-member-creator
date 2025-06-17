@@ -10,6 +10,13 @@ import genericTraits from '../../public/data/traits/generic_traits.json';
 import driversData from '../../public/assets/drivers_data.json';
 import engcrewData from '../../public/assets/engcrew_data.json';
 
+// Import sprite manifests
+import hairSprite from '../../public/assets/hair/hair/HairSprite.json';
+import browSprite from '../../public/assets/hair/brow/HairBrowSprite.json';
+import facialSprite from '../../public/assets/hair/facial/HairFacialSprite.json';
+import hairBackSprite from '../../public/assets/hairBack/HairBackSprite.json';
+import headSprite from '../../public/assets/head/HeadSprite.json';
+
 // Export all data
 export const DATA = {
   codes,
@@ -22,6 +29,13 @@ export const DATA = {
   icons: {
     drivers: driversData,
     engcrew: engcrewData
+  },
+  sprites: {
+    hair: hairSprite,
+    brow: browSprite,
+    facial: facialSprite,
+    hairBack: hairBackSprite,
+    head: headSprite
   }
 } as const;
 
@@ -40,4 +54,9 @@ export function getIconData(memberType: 'driver' | 'engineer' | 'crew_chief') {
 
 export function getCountryCodes() {
   return DATA.codes;
+}
+
+// Sprite data utilities
+export function getSpriteData(spriteType: 'hair' | 'brow' | 'facial' | 'hairBack' | 'head') {
+  return DATA.sprites[spriteType];
 } 
