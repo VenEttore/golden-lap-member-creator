@@ -1,6 +1,6 @@
 {
   "name": "golden-lap-member-creator",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "description": "A fan-made tool for creating custom team members for the Golden Lap racing game",
   "main": "electron/main.js",
   "homepage": "./",
