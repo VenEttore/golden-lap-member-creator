@@ -27,10 +27,7 @@ interface ElectronAPI {
   fileOperations?: {
     optimizeExport: (data: unknown) => Promise<{ success: boolean }>;
   };
-  // Focus management API
-  focus?: {
-    restore: () => Promise<{ success: boolean }>;
-  };
+
 }
 
 declare global {

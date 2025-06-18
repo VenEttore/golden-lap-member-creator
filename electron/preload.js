@@ -27,10 +27,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     optimizeExport: (data) => ipcRenderer.invoke('optimize-export', data),
   },
 
-  // FIX: Focus management for input field issues
-  focus: {
-    restore: () => ipcRenderer.invoke('restore-focus'),
-  }
+
 });
 
 // OPTIMIZATION: Set up performance monitoring in development

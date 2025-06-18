@@ -93,32 +93,7 @@ function createWindow() {
     }
   });
 
-  // FIX: Handle focus management to prevent input field issues
-  mainWindow.on('focus', () => {
-    // Ensure proper focus delegation to the renderer
-    mainWindow.webContents.focus();
-  });
 
-  // FIX: Handle window blur/focus events for proper input handling
-  mainWindow.on('blur', () => {
-    // When window loses focus, prepare for proper refocus
-    setTimeout(() => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.executeJavaScript(`
-          // Clear any existing focus issues
-          if (document.activeElement && document.activeElement.blur) {
-            document.activeElement.blur();
-          }
-          // Force a focus refresh by briefly focusing the body
-          if (document.body) {
-            document.body.focus();
-          }
-        `).catch(() => {
-          // Ignore errors if window is destroyed
-        });
-      }
-    }, 50);
-  });
 
   // Handle window closed
   mainWindow.on('closed', () => {
@@ -202,15 +177,7 @@ function setupIPCHandlers() {
     return { success: true };
   });
 
-  // FIX: Handler for focus restoration
-  ipcMain.handle('restore-focus', async () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.focus();
-      mainWindow.webContents.focus();
-      return { success: true };
-    }
-    return { success: false };
-  });
+
 }
 
 // App event handlers
