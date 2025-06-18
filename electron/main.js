@@ -55,7 +55,7 @@ function createWindow() {
       paintWhenInitiallyHidden: false,
       backgroundThrottling: false
     },
-    icon: path.join(__dirname, '..', 'public', 'favicon.ico'),
+    icon: path.resolve(__dirname, '..', 'public', 'favicon.ico'),
     show: false, // Don't show until ready
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default'
   });
