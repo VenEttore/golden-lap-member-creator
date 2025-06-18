@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faDownload, faEdit, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { Card } from '../ui/Card';
 import { Toggle } from '../ui/toggle';
+import { restoreElectronFocus } from '../../utils/electronFocus';
 
 export default function ModpackManager() {
   const [modpacks, setModpacks] = useState<Modpack[]>([]);
@@ -153,7 +154,10 @@ export default function ModpackManager() {
             <Card title="Modpacks" className="mb-4">
               <div className="flex flex-col gap-2">
                 <Toggle
-                  onClick={handleNew}
+                  onClick={() => {
+                    handleNew();
+                    setTimeout(() => restoreElectronFocus({ force: true }), 100);
+                  }}
                   className="w-full justify-center !bg-[#fd655c] !text-white !border-[#fd655c] hover:!bg-[#b92d2a] hover:!border-[#b92d2a] mb-2"
                   style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}
                 >

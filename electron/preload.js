@@ -25,6 +25,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // OPTIMIZATION: Future file operations (placeholder)
   fileOperations: {
     optimizeExport: (data) => ipcRenderer.invoke('optimize-export', data),
+  },
+
+  // FIX: Focus management for input field issues
+  focus: {
+    restore: () => ipcRenderer.invoke('restore-focus'),
   }
 });
 
