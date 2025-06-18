@@ -1,6 +1,6 @@
 {
   "name": "golden-lap-member-creator",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "A fan-made tool for creating custom team members for the Golden Lap racing game",
   "main": "electron/main.js",
   "homepage": "./",
@@ -13,9 +13,7 @@
     "test:vitest": "vitest run",
     "electron": "electron .",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
-    "electron:package": "npm run build && electron-packager . golden-lap-member-creator --platform=win32 --arch=x64 --out=dist --overwrite --icon=public/favicon.ico --ignore=\"src|public|\\.next|\\.git|README\\.md|LICENSE|tsconfig\\.json|postcss\\.config\\.mjs|components\\.json|\\.eslintrc\\.json|vitest\\.config\\.ts|scripts|\\.gitignore|node_modules/(?!electron).*\"",
-    "preelectron:pack": "npm run build",
-    "preelectron:dist": "npm run build"
+    "electron:package": "npm run build && electron-packager . golden-lap-member-creator --platform=win32 --arch=x64 --out=dist --overwrite --icon=public/favicon.ico --ignore=\"src|public|\\.next|\\.git|README\\.md|LICENSE|tsconfig\\.json|postcss\\.config\\.mjs|components\\.json|\\.eslintrc\\.json|vitest\\.config\\.ts|scripts|\\.gitignore|node_modules/(?!electron).*\""
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",

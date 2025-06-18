@@ -17,8 +17,8 @@ import facialSprite from '../../public/assets/hair/facial/HairFacialSprite.json'
 import hairBackSprite from '../../public/assets/hairBack/HairBackSprite.json';
 import headSprite from '../../public/assets/head/HeadSprite.json';
 
-// Export all data
-export const DATA = {
+// Internal data structure (not exported to reduce API surface)
+const DATA = {
   codes,
   traits: {
     driver: driverTraits,
@@ -39,7 +39,7 @@ export const DATA = {
   }
 } as const;
 
-// Utility functions for data access
+// Utility functions for data access (these are used throughout the app)
 export function getTraitData(memberType: 'driver' | 'engineer' | 'crew_chief') {
   return DATA.traits[memberType];
 }

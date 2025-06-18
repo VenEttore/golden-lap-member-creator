@@ -1,0 +1,14 @@
+{
+  "ignore": [
+    "electron/preload.js"
+  ],
+  "ignoreBinaries": [
+    "serve"
+  ],
+  "ignoreDependencies": [
+    "cross-env",
+    "wait-on",
+    "eslint",
+    "eslint-config-next"
+  ]
+} 
