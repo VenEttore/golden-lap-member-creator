@@ -1,7 +1,6 @@
-const { app, BrowserWindow, Menu, protocol, net, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, protocol, net } = require('electron');
 const path = require('path');
 const { pathToFileURL } = require('url');
-const { spawn } = require('child_process');
 
 // Custom protocol scheme
 const PROTOCOL_SCHEME = 'app';
@@ -11,9 +10,12 @@ const APP_URL = `${PROTOCOL_SCHEME}://localhost`;
 let mainWindow;
 let isDev = process.env.NODE_ENV === 'development';
 
-// OPTIMIZATION: Improve app startup performance
+// OPTIMIZATION: Performance flags for better rendering and memory usage
 app.commandLine.appendSwitch('--disable-backgrounding-occluded-windows');
 app.commandLine.appendSwitch('--disable-renderer-backgrounding');
+app.commandLine.appendSwitch('--disable-web-security'); // For local file access
+app.commandLine.appendSwitch('--disable-features', 'VizDisplayCompositor');
+app.commandLine.appendSwitch('--max-old-space-size', '512'); // Limit V8 heap to 512MB
 
 // Enable live reload for Electron in development
 if (isDev) {
@@ -53,20 +55,27 @@ function createWindow() {
       // OPTIMIZATION: Better rendering performance
       offscreen: false,
       paintWhenInitiallyHidden: false,
-      backgroundThrottling: false
+      backgroundThrottling: false,
+      // Memory optimizations
+      nodeIntegrationInWorker: false,
+      nodeIntegrationInSubFrames: false,
+      // Disable unused features
+      plugins: false,
+      experimentalFeatures: false
     },
     icon: path.resolve(__dirname, '..', 'public', 'favicon.ico'),
     show: false, // Don't show until ready
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default'
   });
 
-  // OPTIMIZATION: Set up memory management
+  // OPTIMIZATION: Memory management
   mainWindow.webContents.on('dom-ready', () => {
-    // Optimize memory usage for large datasets
-    mainWindow.webContents.executeJavaScript(`
-      // Hint to V8 about memory pressure for large operations
-      if (window.gc) { window.gc(); }
-    `);
+    // Trigger garbage collection for large operations
+    if (!isDev) {
+      mainWindow.webContents.executeJavaScript(`
+        if (window.gc) { window.gc(); }
+      `);
+    }
   });
 
   // Load the Next.js app
@@ -77,14 +86,11 @@ function createWindow() {
   } else {
     // Production: load from custom protocol
     mainWindow.loadURL(`${APP_URL}/`);
-    console.log(`Loading production app from: ${APP_URL}/`);
   }
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    
-    // OPTIMIZATION: Focus window and bring to front
     mainWindow.focus();
     
     // Open DevTools in development
@@ -92,8 +98,6 @@ function createWindow() {
       mainWindow.webContents.openDevTools();
     }
   });
-
-
 
   // Handle window closed
   mainWindow.on('closed', () => {
@@ -145,39 +149,26 @@ function setupProtocolHandler() {
       // Security check: ensure the resolved path is within the out directory
       const relativePath = path.relative(outDir, resolvedPath);
       if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
-        console.error('Security error: Path outside app directory:', filePath);
+        if (isDev) {
+          console.error('Security error: Path outside app directory:', filePath);
+        }
         return new Response('Forbidden', { status: 403 });
       }
       
       // Convert to file URL and fetch
       const fileUrl = pathToFileURL(resolvedPath).href;
-      console.log(`Protocol handler: ${request.url} -> ${fileUrl}`);
+      if (isDev) {
+        console.log(`Protocol handler: ${request.url} -> ${fileUrl}`);
+      }
       
       return net.fetch(fileUrl);
     } catch (error) {
-      console.error('Protocol handler error:', error);
+      if (isDev) {
+        console.error('Protocol handler error:', error);
+      }
       return new Response('Internal Server Error', { status: 500 });
     }
   });
-}
-
-// OPTIMIZATION: Set up IPC handlers for potential file operations
-function setupIPCHandlers() {
-  // Handler for optimized file operations (if needed in future)
-  ipcMain.handle('optimize-export', async (event, data) => {
-    // Placeholder for future native file operations
-    return { success: true };
-  });
-  
-  // Handler for memory cleanup
-  ipcMain.handle('cleanup-memory', async () => {
-    if (global.gc) {
-      global.gc();
-    }
-    return { success: true };
-  });
-
-
 }
 
 // App event handlers
@@ -185,10 +176,9 @@ app.whenReady().then(() => {
   if (!isDev) {
     setupProtocolHandler();
   }
-  setupIPCHandlers();
   createWindow();
 
-  // OPTIMIZATION: Set application priority
+  // OPTIMIZATION: Platform-specific performance settings
   if (process.platform === 'win32') {
     app.commandLine.appendSwitch('--high-dpi-support', '1');
   }
@@ -208,13 +198,18 @@ app.on('activate', () => {
 
 // Handle app events
 app.on('before-quit', () => {
-  console.log('App is quitting...');
+  if (isDev) {
+    console.log('App is quitting...');
+  }
 });
 
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-});
+// Error handling - only log in development
+if (isDev) {
+  process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+  });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-}); 
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  });
+} 
