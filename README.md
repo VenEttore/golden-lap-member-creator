@@ -8,7 +8,6 @@ A modern desktop application for creating, editing, and managing custom team mem
 
 - **Windows 10/11 (64-bit)**: Download the ZIP file, extract, and run `golden-lap-member-creator.exe`
 - **No installation required** - completely portable
-- **Offline functionality** - works without internet connection
 
 ## Features
 - Create, edit, and manage drivers, engineers, and crew chiefs

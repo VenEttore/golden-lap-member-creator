@@ -76,7 +76,7 @@ jobs:
         - Portrait generation and customization
         - Modpack creation and export
         - Batch operations for multiple members
-        - Offline functionality - no internet required
+        - Member randomizer requires Internet access due to usage of randomuser.me's API
         "@
         
         gh release create $version `
