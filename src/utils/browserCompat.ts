@@ -17,17 +17,10 @@ interface ElectronAPI {
   removeAllListeners: (channel: string) => void;
   platform: string;
   isElectron: boolean;
-  // Performance monitoring API
+  // Performance utilities
   performance?: {
-    getMemoryUsage: () => NodeJS.MemoryUsage;
-    cleanupMemory: () => Promise<{ success: boolean }>;
     now: () => number;
   };
-  // File operations API
-  fileOperations?: {
-    optimizeExport: (data: unknown) => Promise<{ success: boolean }>;
-  };
-
 }
 
 declare global {
@@ -154,11 +147,11 @@ export function createSafeCanvas(): HTMLCanvasElement | null {
 // Electron-specific utilities
 export const electronUtils = {
   getAppVersion: async (): Promise<string> => {
-    if (!isElectron || !window.electronAPI) return '0.10.2'; // Fallback version
+    if (!isElectron || !window.electronAPI) return '1.1.3'; // Current version fallback
     try {
       return await window.electronAPI.getAppVersion();
     } catch {
-      return '0.10.2';
+      return '1.1.3';
     }
   },
   
