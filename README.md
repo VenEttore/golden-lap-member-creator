@@ -4,7 +4,7 @@ A modern desktop application for creating, editing, and managing custom team mem
 
 ## 📥 Download
 
-**[Download Latest Release](https://github.com/YOUR_USERNAME/golden-lap-member-creator/releases/latest)**
+**[Download Latest Release](https://github.com/VenEttore/golden-lap-member-creator/releases/latest)**
 
 - **Windows 10/11 (64-bit)**: Download the ZIP file, extract, and run `golden-lap-member-creator.exe`
 - **No installation required** - completely portable
