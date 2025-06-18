@@ -29,8 +29,9 @@ declare global {
   }
 }
 
-export const isBrowser = typeof window !== 'undefined';
-export const isElectron = isBrowser && !!window.electronAPI;
+// Internal utilities (not exported to reduce API surface)
+const isBrowser = typeof window !== 'undefined';
+const isElectron = isBrowser && !!window.electronAPI;
 
 // Safe window operations
 export const safeWindow = {
@@ -62,34 +63,6 @@ export const safeWindow = {
   getScrollY: (): number => {
     if (!isBrowser) return 0;
     return window.scrollY;
-  }
-};
-
-// Safe document operations  
-export const safeDocument = {
-  createElement: <K extends keyof HTMLElementTagNameMap>(tagName: K): HTMLElementTagNameMap[K] | null => {
-    if (!isBrowser) return null;
-    return document.createElement(tagName);
-  },
-  
-  getElementById: (id: string): HTMLElement | null => {
-    if (!isBrowser) return null;
-    return document.getElementById(id);
-  },
-  
-  addEventListener: (type: string, listener: EventListener, options?: boolean | AddEventListenerOptions): void => {
-    if (!isBrowser) return;
-    document.addEventListener(type, listener, options);
-  },
-  
-  removeEventListener: (type: string, listener: EventListener, options?: boolean | EventListenerOptions): void => {
-    if (!isBrowser) return;
-    document.removeEventListener(type, listener, options);
-  },
-  
-  getBody: (): HTMLElement | null => {
-    if (!isBrowser) return null;
-    return document.body;
   }
 };
 
@@ -142,43 +115,4 @@ export function createSafeImage(): HTMLImageElement | null {
 export function createSafeCanvas(): HTMLCanvasElement | null {
   if (!isBrowser) return null;
   return document.createElement('canvas');
-}
-
-// Electron-specific utilities
-export const electronUtils = {
-  getAppVersion: async (): Promise<string> => {
-    if (!isElectron || !window.electronAPI) return '1.1.3'; // Current version fallback
-    try {
-      return await window.electronAPI.getAppVersion();
-    } catch {
-      return '1.1.3';
-    }
-  },
-  
-  getPlatform: (): string => {
-    if (!isElectron || !window.electronAPI) return 'web';
-    return window.electronAPI.platform || 'unknown';
-  },
-  
-  setupMenuListeners: (callbacks: {
-    onNewMember?: () => void;
-    onExportMembers?: () => void;
-  }) => {
-    if (!isElectron || !window.electronAPI) return;
-    
-    if (callbacks.onNewMember) {
-      window.electronAPI.onMenuNewMember(callbacks.onNewMember);
-    }
-    
-    if (callbacks.onExportMembers) {
-      window.electronAPI.onMenuExportMembers(callbacks.onExportMembers);
-    }
-  },
-  
-  removeMenuListeners: () => {
-    if (!isElectron || !window.electronAPI) return;
-    
-    window.electronAPI.removeAllListeners('menu-new-member');
-    window.electronAPI.removeAllListeners('menu-export-members');
-  }
-}; 
+} 
