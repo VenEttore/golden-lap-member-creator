@@ -7,6 +7,7 @@ import { faDownload, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { PortraitConfig } from '@/types/portrait';
 import PortraitThumbnail from './PortraitThumbnail';
 import { generateRandomPortraits } from '@/utils/batchPortraitRandomizer';
+import { restoreElectronFocus } from '@/utils/electronFocus';
 import Image from 'next/image';
 
 // Color palette and card styles from MemberCreatorModern
@@ -139,7 +140,11 @@ const PortraitGallery: React.FC = () => {
             <Card title="Saved Portraits">
               <div className="flex flex-col gap-4">
                 <button
-                  onClick={() => setShowBatchModal(true)}
+                  onClick={() => {
+                    setShowBatchModal(true);
+                    // Restore focus for Electron after modal opens
+                    setTimeout(() => restoreElectronFocus({ force: true }), 200);
+                  }}
                   style={{
                     padding: '10px 32px',
                     borderRadius: 999,

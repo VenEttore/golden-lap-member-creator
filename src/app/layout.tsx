@@ -5,6 +5,7 @@ import NavSidebar from "../components/ui/NavSidebar";
 import { Toaster } from "sonner";
 import AppLegalNotice from '../components/AppLegalNotice';
 import ErrorBoundary from '../components/ErrorBoundary';
+import ElectronFocusManager from '../components/ElectronFocusManager';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ErrorBoundary>
+          <ElectronFocusManager />
           <NavSidebar />
           {children}
         <Toaster
