@@ -25,7 +25,7 @@ A modern desktop application for creating, editing, and managing custom team mem
 
 ### Installation
 ```sh
-git clone https://github.com/YOUR_USERNAME/golden-lap-member-creator.git
+git clone https://github.com/VenEttore/golden-lap-member-creator.git
 cd golden-lap-member-creator
 npm install
 ```
